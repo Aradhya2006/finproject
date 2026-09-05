@@ -13,7 +13,7 @@ REQUIRED_COLUMNS = [
     "VWAP",
     "VOLUME",
     "VALUE",
-    "NO. OF  TRADES",
+    "NO. OF TRADES",
 ]
 
 

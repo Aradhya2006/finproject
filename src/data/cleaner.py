@@ -8,11 +8,11 @@ NUMERIC_COLUMNS = [
     "LTP",
     "CLOSE",
     "VWAP",
-    "52 WEEK HIGH",
-    "52 WEEK LOW",
     "VOLUME",
     "VALUE",
-    "NO. OF  TRADES",
+    "NO. OF TRADES",
+    "DELIVERABLE QTY",
+    "DELIVERABLE %",
 ]
 
 def load_raw_csv(file_path):
@@ -22,7 +22,7 @@ def clean_dates(df):
     df = df.copy()
     df["DATE"] = pd.to_datetime(
     df["DATE"],
-    format="%d-%b-%y"
+    format="%d-%b-%Y"
 )   
     return df
 
@@ -30,8 +30,17 @@ def clean_numeric_columns(df):
     df = df.copy()
 
     for col in NUMERIC_COLUMNS:
-        df[col] = (df[col].astype(str).str.replace(",","", regex = False).astype(float))
+        df[col] = (
+            df[col]
+            .astype(str)
+            .str.replace(",", "", regex=False)
+            .replace("-", pd.NA)
+        )
 
+        df[col] = pd.to_numeric(
+            df[col],
+            errors="coerce",
+        )
 
     return df
 
@@ -44,6 +53,19 @@ def clean_nse_data(file_path):
     df = clean_dates(df)
     df = clean_numeric_columns(df)
     df = sort_by_date(df)
+    return df
 
 
+def clean_loaded_nse_data(df):
+    """
+    Clean an already-loaded and combined NSE dataset.
+    """
+
+    df = df.copy()
+
+    df = clean_dates(df)
+
+    df = clean_numeric_columns(df)
+
+    df = sort_by_date(df)
     return df
