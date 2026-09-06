@@ -14,3 +14,16 @@ def calculate_stress_loss_value(portfolio_return,portfolio_value):
         raise ValueError("Portfolio value must be greater than zero.")
 
     return -portfolio_return * portfolio_value
+
+def evaluate_stress_scenarios(weights,scenarios):
+    results = {}
+
+    for scenario_name, shocks in scenarios.items():
+        stress_return = calculate_stress_loss(
+            weights,
+            shocks,
+        )
+
+        results[scenario_name] = stress_return
+
+    return results
