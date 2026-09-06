@@ -28,20 +28,28 @@ def calculate_portfolio_weights(holding_values):
     return weights
 
 def calculate_portfolio_returns(asset_returns, weights):
-    portfolio_returns = asset_returns.copy()
+    returns = asset_returns.copy()
 
-    for symbol, weight in weights.items():
-        if symbol not in portfolio_returns.columns:
-            raise ValueError(
-                f"Returns not available for {symbol}."
-            )
+    missing_symbols = [
+        symbol
+        for symbol in weights
+        if symbol not in returns.columns
+    ]
 
-        portfolio_returns[symbol] = (
-            portfolio_returns[symbol] * weight
+    if missing_symbols:
+        raise ValueError(
+            f"Returns not available for {missing_symbols}."
         )
 
-    portfolio_returns["PORTFOLIO RETURN"] = (
-        portfolio_returns[list(weights.keys())].sum(axis=1)
+    weighted_returns = returns[
+        list(weights.keys())
+    ].mul(
+        [weights[symbol] for symbol in weights],
+        axis=1,
     )
 
-    return portfolio_returns
+    returns["PORTFOLIO RETURN"] = (
+        weighted_returns.sum(axis=1)
+    )
+
+    return returns
