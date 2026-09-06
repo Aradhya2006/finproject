@@ -13,7 +13,10 @@ from src.risk.backtesting import (
     backtest_historical_var,
     calculate_violation_statistics,
 )
-
+from src.risk.christoffersen import (
+    calculate_christoffersen_test,
+    calculate_conditional_coverage_test,
+)
 
 # --------------------------------------------------
 # Portfolio A
@@ -265,3 +268,77 @@ assert np.isclose(
 assert kupiec_results["likelihood_ratio"] >= 0
 
 assert 0 <= kupiec_results["p_value"] <= 1
+
+
+
+
+# --------------------------------------------------
+# Christoffersen Independence Test
+# --------------------------------------------------
+
+christoffersen_results = calculate_christoffersen_test(
+    backtest_results
+)
+
+print("\nChristoffersen Independence Test")
+print("-" * 60)
+
+print(f"N00: {christoffersen_results['n00']}")
+print(f"N01: {christoffersen_results['n01']}")
+print(f"N10: {christoffersen_results['n10']}")
+print(f"N11: {christoffersen_results['n11']}")
+
+print(
+    f"P(Violation | No Violation): "
+    f"{christoffersen_results['pi01']:.4f}"
+)
+
+print(
+    f"P(Violation | Violation): "
+    f"{christoffersen_results['pi11']:.4f}"
+)
+
+print(
+    f"Likelihood ratio: "
+    f"{christoffersen_results['likelihood_ratio']:.6f}"
+)
+
+print(
+    f"P-value: "
+    f"{christoffersen_results['p_value']:.6f}"
+)
+
+# --------------------------------------------------
+# Conditional Coverage Test
+# --------------------------------------------------
+
+conditional_coverage_results = (
+    calculate_conditional_coverage_test(
+        kupiec_results,
+        christoffersen_results,
+    )
+)
+
+print("\nConditional Coverage Test")
+print("-" * 60)
+
+print(
+    f"Likelihood ratio: "
+    f"{conditional_coverage_results['likelihood_ratio']:.6f}"
+)
+
+print(
+    f"P-value: "
+    f"{conditional_coverage_results['p_value']:.6f}"
+)
+
+assert (
+    conditional_coverage_results["likelihood_ratio"]
+    >= 0
+)
+
+assert (
+    0
+    <= conditional_coverage_results["p_value"]
+    <= 1
+)
