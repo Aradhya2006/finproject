@@ -65,17 +65,19 @@ def load_raw_nse_files(symbol):
 
         dataframes.append(df)
 
-    combined = pd.concat(
-        dataframes,
-        ignore_index=True,
+    combined = pd.concat(dataframes, ignore_index=True)
+
+    combined["DATE"] = pd.to_datetime(
+        combined["DATE"],
+        format="mixed",
+        dayfirst=True,
     )
 
-    combined = combined.sort_values(
-        "DATE",
-        key=lambda column: pd.to_datetime(
-            column,
-            format="%d-%b-%Y",
-        )
-    ).reset_index(drop=True)
+    combined = (
+        combined
+        .drop_duplicates()
+        .sort_values("DATE")
+        .reset_index(drop=True)
+    )
 
     return combined

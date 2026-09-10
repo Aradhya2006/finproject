@@ -19,8 +19,8 @@ print("Duplicate rows:", df.duplicated().sum())
 
 print()
 print("First raw date:")
-print(df["Date  "].iloc[0])
+print(df["DATE"].iloc[0])
 
 print()
 print("Last raw date:")
-print(df["Date  "].iloc[-1])
+print(df["DATE"].iloc[-1])

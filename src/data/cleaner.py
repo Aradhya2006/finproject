@@ -22,14 +22,18 @@ def clean_dates(df):
     df = df.copy()
     df["DATE"] = pd.to_datetime(
     df["DATE"],
-    format="%d-%b-%Y"
-)   
+    format="mixed",
+    dayfirst=True,
+)
     return df
 
 def clean_numeric_columns(df):
     df = df.copy()
 
     for col in NUMERIC_COLUMNS:
+        if col not in df.columns:
+            continue
+
         df[col] = (
             df[col]
             .astype(str)
