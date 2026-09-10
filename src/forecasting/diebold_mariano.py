@@ -109,9 +109,7 @@ def diebold_mariano_test(
     )
 
     # Small-sample correction
-    correction = np.sqrt(
-        (n + 1 - 2 + 1) / n
-    )
+    correction = np.sqrt((n - 1) / n)
 
     dm_statistic *= correction
 
