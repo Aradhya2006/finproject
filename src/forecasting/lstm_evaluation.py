@@ -1,68 +1,48 @@
 import numpy as np
-import pandas as pd
-import torch
-
-from src.forecasting.evaluation import (
-    calculate_mae,
-    calculate_rmse,
-    calculate_forecast_correlation,
-)
 
 
-def generate_lstm_predictions(model, X):
-    if X.ndim != 3:
-        raise ValueError(
-            "X must have shape "
-            "(samples, sequence_length, features)."
-        )
-
-    model.eval()
-
-    X_tensor = torch.tensor(
-        X,
-        dtype=torch.float32,
-    )
-
-    with torch.no_grad():
-        predictions = model(X_tensor)
-
-    return predictions.cpu().numpy()
-
-
-def evaluate_lstm_predictions(
-    y_actual,
-    y_predicted,
+def calculate_lstm_metrics(
+    predictions,
+    actual,
 ):
-    y_actual = np.asarray(y_actual)
-    y_predicted = np.asarray(y_predicted)
+    predictions = np.asarray(predictions, dtype=float)
+    actual = np.asarray(actual, dtype=float)
 
-    if len(y_actual) != len(y_predicted):
+    if len(predictions) != len(actual):
         raise ValueError(
-            "Actual and predicted arrays must have "
-            "the same length."
+            "predictions and actual must have the same length."
         )
 
-    actual = pd.Series(y_actual)
-    predicted = pd.Series(y_predicted)
+    if len(predictions) == 0:
+        raise ValueError(
+            "predictions and actual cannot be empty."
+        )
+
+    if not np.all(np.isfinite(predictions)):
+        raise ValueError(
+            "predictions contain non-finite values."
+        )
+
+    if not np.all(np.isfinite(actual)):
+        raise ValueError(
+            "actual contains non-finite values."
+        )
+
+    errors = predictions - actual
+
+    mae = np.mean(np.abs(errors))
+    rmse = np.sqrt(np.mean(errors ** 2))
+
+    if np.std(predictions) == 0 or np.std(actual) == 0:
+        correlation = np.nan
+    else:
+        correlation = np.corrcoef(
+            predictions,
+            actual,
+        )[0, 1]
 
     return {
-        "observations": len(y_actual),
-        "mae": calculate_mae(
-            actual,
-            predicted,
-        ),
-        "rmse": calculate_rmse(
-            actual,
-            predicted,
-        ),
-        "correlation": calculate_forecast_correlation(
-            actual,
-            predicted,
-        ),
-        "average_forecast": float(
-            np.mean(y_predicted)
-        ),
-        "average_realized": float(
-            np.mean(y_actual)
-        ),
+        "MAE": mae,
+        "RMSE": rmse,
+        "CORR": correlation,
     }
