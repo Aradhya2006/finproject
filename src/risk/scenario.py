@@ -438,7 +438,7 @@ def calculate_scenario_cvar(
     )
 
     tail_returns = cumulative_returns[
-        cumulative_returns <= threshold
+        cumulative_returns < threshold
     ]
 
     if len(tail_returns) == 0:
