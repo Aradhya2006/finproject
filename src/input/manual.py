@@ -5,6 +5,7 @@ from src.finance.portfolio import (
     calculate_portfolio_weights,
 )
 
+from src.input.portfolio_input import PortfolioInput
 
 def validate_holdings(holdings):
     """
@@ -135,16 +136,17 @@ def calculate_portfolio_from_holdings(
         holding_values
     )
 
-    return {
-        "holdings": validated_holdings,
-        "prices": clean_prices,
-        "holding_values": holding_values,
-        "portfolio_value": portfolio_value,
-        "weights": weights,
-        "assets": list(
-            validated_holdings.keys()
-        ),
-    }
+    return PortfolioInput(
+    holdings=validated_holdings,
+    prices=clean_prices,
+    holding_values=holding_values,
+    portfolio_value=portfolio_value,
+    weights=weights,
+    assets=list(
+        validated_holdings.keys()
+    ),
+    source="manual",
+)
 
 
 def create_current_manual_portfolio(holdings):

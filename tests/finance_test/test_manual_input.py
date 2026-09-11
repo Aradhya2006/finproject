@@ -1,8 +1,7 @@
 import pytest
+
 from src.input.manual import (
     create_current_manual_portfolio,
-)
-from src.input.manual import (
     validate_holdings,
     create_manual_portfolio,
 )
@@ -74,9 +73,8 @@ def test_invalid_quantity():
         validate_holdings({
             "TCS": "ten",
         })
-        
-        
-        
+
+
 def test_calculate_portfolio_from_holdings():
 
     from src.input.manual import (
@@ -107,36 +105,35 @@ def test_calculate_portfolio_from_holdings():
     print("=" * 60)
     print(
         "Holding values:",
-        portfolio["holding_values"],
+        portfolio.holding_values,
     )
     print(
         "Portfolio value:",
-        portfolio["portfolio_value"],
+        portfolio.portfolio_value,
     )
     print(
         "Weights:",
-        portfolio["weights"],
+        portfolio.weights,
     )
 
-    assert portfolio["holding_values"] == {
+    assert portfolio.holding_values == {
         "TCS": 35000.0,
         "INFY": 22500.0,
         "RELIANCE": 7000.0,
     }
 
     assert (
-        portfolio["portfolio_value"]
+        portfolio.portfolio_value
         == 64500.0
     )
 
     assert abs(
         sum(
-            portfolio["weights"].values()
+            portfolio.weights.values()
         ) - 1.0
     ) < 1e-10
-    
-    
-    
+
+
 def test_missing_price():
 
     from src.input.manual import (
@@ -161,10 +158,8 @@ def test_invalid_price():
             {"TCS": 10},
             {"TCS": -100},
         )
-        
-        
-        
-        
+
+
 def test_create_current_manual_portfolio():
 
     holdings = {
@@ -183,30 +178,32 @@ def test_create_current_manual_portfolio():
 
     print(
         "Prices:",
-        portfolio["prices"]
+        portfolio.prices,
     )
 
     print(
         "Holding values:",
-        portfolio["holding_values"]
+        portfolio.holding_values,
     )
 
     print(
         "Portfolio value:",
-        portfolio["portfolio_value"]
+        portfolio.portfolio_value,
     )
 
     print(
         "Weights:",
-        portfolio["weights"]
+        portfolio.weights,
     )
 
     assert set(
-        portfolio["assets"]
+        portfolio.assets
     ) == set(holdings.keys())
 
-    assert portfolio["portfolio_value"] > 0
+    assert portfolio.portfolio_value > 0
 
     assert abs(
-        sum(portfolio["weights"].values()) - 1.0
+        sum(
+            portfolio.weights.values()
+        ) - 1.0
     ) < 1e-10
