@@ -28,38 +28,47 @@ def test_dynamic_asset_risk():
         price_data
     )
 
-    asset_returns = asset_returns.set_index(
-        "DATE"
+    asset_returns = (
+        asset_returns
+        .set_index("DATE")
+        [symbols]
     )
 
-    volatilities = (
+    dynamic_volatilities = (
         calculate_dynamic_asset_volatilities(
-            asset_returns
+            asset_returns,
+            lambda_=0.94,
         )
     )
 
     print()
-    print("DYNAMIC ASSET VOLATILITY")
+    print("DYNAMIC ASSET VOLATILITIES")
     print("=" * 60)
 
-    for asset, volatility in volatilities.items():
+    for asset, volatility in (
+        dynamic_volatilities.items()
+    ):
         print(
-            f"{asset}: "
+            f"{asset:<12} "
             f"{volatility:.4%}"
         )
 
-    assert len(volatilities) == 5
+    print()
+
+    assert len(dynamic_volatilities) == len(
+        symbols
+    )
+
+    assert list(
+        dynamic_volatilities.index
+    ) == symbols
 
     assert np.all(
         np.isfinite(
-            volatilities.to_numpy()
+            dynamic_volatilities.to_numpy()
         )
     )
 
     assert np.all(
-        volatilities.to_numpy() > 0
+        dynamic_volatilities.to_numpy() > 0
     )
-
-    assert list(
-        volatilities.index
-    ) == symbols
