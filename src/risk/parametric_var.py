@@ -1,6 +1,3 @@
-import numpy as np
-
-
 def calculate_parametric_var(
     portfolio_returns,
     confidence_level=0.95,
@@ -9,8 +6,6 @@ def calculate_parametric_var(
 
     mean_return = returns.mean()
     volatility = returns.std(ddof=1)
-
-    tail_probability = 1 - confidence_level
 
     z_score = {
         0.90: -1.2816,

@@ -62,7 +62,6 @@ def test_dynamic_var_validation():
     backtest_results = backtest_dynamic_ewma_var(
         asset_returns,
         weights,
-        correlation_matrix,
         confidence_level=0.95,
         lambda_=0.94,
         window=252,

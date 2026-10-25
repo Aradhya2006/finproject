@@ -152,8 +152,8 @@ def calculate_portfolio_from_holdings(
 def create_current_manual_portfolio(holdings):
     """
     Validate manual holdings, obtain the latest
-    available NSE prices, and calculate the
-    current portfolio valuation.
+    available NSE prices (live NSE API or CSV fallback),
+    and calculate the current portfolio valuation.
     """
 
     validated_holdings = validate_holdings(
@@ -164,11 +164,17 @@ def create_current_manual_portfolio(holdings):
         validated_holdings.keys()
     )
 
-    prices = get_latest_prices(
-        assets
+    raw_prices = get_latest_prices(assets)
+
+    # get_latest_prices includes a _sources metadata key
+    sources = raw_prices.pop("_sources", {})
+
+    portfolio = calculate_portfolio_from_holdings(
+        validated_holdings,
+        raw_prices,
     )
 
-    return calculate_portfolio_from_holdings(
-        validated_holdings,
-        prices,
-    )
+    # Attach price-source metadata (live vs csv) to portfolio object
+    portfolio.price_sources = sources
+
+    return portfolio

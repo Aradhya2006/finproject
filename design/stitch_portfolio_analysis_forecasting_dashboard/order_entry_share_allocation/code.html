@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "secondary": "#4edea3", "surface-container-highest": "#31353f", "on-primary-fixed-variant": "#004e5c", "tertiary-fixed": "#ffdadb", "on-secondary-fixed-variant": "#005236", "surface-variant": "#31353f", "surface-container-low": "#181b25", "on-tertiary-fixed-variant": "#92002a", "error-container": "#93000a", "on-secondary": "#003824", "on-tertiary": "#67001b", "surface-container": "#1c1f29", "surface-tint": "#4cd7f6", "inverse-surface": "#dfe2ef", "primary": "#4cd7f6", "tertiary-fixed-dim": "#ffb2b7", "surface-container-lowest": "#0a0e17", "on-primary": "#003640", "surface-bright": "#353943", "inverse-primary": "#00687a", "secondary-fixed": "#6ffbbe", "on-primary-container": "#00424f", "primary-fixed-dim": "#4cd7f6", "on-error": "#690005", "surface-container-high": "#262a34", "tertiary": "#ffb2b7", "outline-variant": "#3d494c", "surface": "#0f131c", "primary-fixed": "#acedff", "tertiary-container": "#ff7f8b", "on-tertiary-container": "#7d0023", "secondary-fixed-dim": "#4edea3", "on-error-container": "#ffdad6", "on-secondary-container": "#00311f", "on-surface-variant": "#bcc9cd", "on-background": "#dfe2ef", "on-surface": "#dfe2ef", "error": "#ffb4ab", "surface-dim": "#0f131c", "primary-container": "#06b6d4", "secondary-container": "#00a572", "inverse-on-surface": "#2c303a", "on-secondary-fixed": "#002113", "background": "#0f131c", "outline": "#869397", "on-primary-fixed": "#001f26", "on-tertiary-fixed": "#40000d" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "space-sm": "0.5rem", "gutter-mobile": "0.75rem", "space-md": "0.75rem", "space-3xl": "3rem", "space-xl": "1.5rem", "margin-mobile": "1rem", "space-base": "1rem", "gutter": "1rem", "space-lg": "1.25rem", "space-2xs": "0.125rem", "margin": "1.5rem", "space-2xl": "2rem", "space-xs": "0.25rem" }, "fontFamily": { "body-lg": [ "Inter" ], "display-lg": [ "Inter" ], "headline-lg": [ "Inter" ], "headline-sm": [ "Inter" ], "stat-md": [ "JetBrains Mono" ], "display-lg-mobile": [ "Inter" ], "body-sm": [ "Inter" ], "stat-sm": [ "JetBrains Mono" ], "body-md": [ "Inter" ], "label-caps": [ "Inter" ], "stat-lg": [ "JetBrains Mono" ], "headline-md": [ "Inter" ] }, "fontSize": { "body-lg": [ "16px", { "lineHeight": "24px", "letterSpacing": "-0.005em", "fontWeight": "400" } ], "display-lg": [ "40px", { "lineHeight": "48px", "letterSpacing": "-0.025em", "fontWeight": "700" } ], "headline-lg": [ "28px", { "lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "600" } ], "headline-sm": [ "18px", { "lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600" } ], "stat-md": [ "16px", { "lineHeight": "22px", "letterSpacing": "-0.01em", "fontWeight": "500" } ], "display-lg-mobile": [ "32px", { "lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "700" } ], "body-sm": [ "12px", { "lineHeight": "16px", "fontWeight": "400" } ], "stat-sm": [ "12px", { "lineHeight": "16px", "fontWeight": "500" } ], "body-md": [ "14px", { "lineHeight": "20px", "fontWeight": "400" } ], "label-caps": [ "11px", { "lineHeight": "14px", "letterSpacing": "0.06em", "fontWeight": "600" } ], "stat-lg": [ "24px", { "lineHeight": "30px", "letterSpacing": "-0.02em", "fontWeight": "600" } ], "headline-md": [ "22px", { "lineHeight": "28px", "letterSpacing": "-0.015em", "fontWeight": "600" } ] } } } };</script></head><body class="bg-background font-body-md text-on-surface antialiased"><aside class="fixed left-0 top-0 h-full w-64 bg-surface-container-lowest z-50 flex flex-col justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex flex-col"><div class="h-16 px-space-xl flex items-center gap-space-sm bg-surface-container-lowest"><img alt="Brand logo. - Primary color: #06b6d4
+- Font: inter
+- Mode: dark
+- Roundness: rounded-md
+" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1U5jLmIlQLHjJtQluPR2uZECIxOOu5Ji0CtpKXciMuycfsRqRhgx2Ha5zNEIoGRcpQwDvMcTkIf1LJq0oP6kTsekxuDRGhcAsnbCukQZjaMdrwIY-IjwDEwnhTfXl9RDP3oaIJ4aSFsOgK_IlYXS5Um7xQ48WMgvxgoHtHNuyagor8NGvS3FhWjlWTprl2ludI4ih4JaPgN6CEbMnQVrgqzERoVL3xpilSC2NY8DrrbGrLJMbHFOpe9zxw"/><div class="flex flex-col"><span class="font-headline-sm text-headline-sm tracking-tight text-on-surface font-bold leading-none">Kinetix</span><span class="font-label-caps text-label-caps uppercase text-primary tracking-wider">Quantitative</span></div></div><div class="px-space-xl py-space-md mx-space-md my-space-sm rounded-lg bg-surface-container-low"><div class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Portfolio Equity</div><div class="font-stat-md text-stat-md text-on-surface font-semibold mt-space-2xs">$284,950.40</div><div class="flex items-center gap-space-2xs mt-space-2xs"><span class="font-stat-sm text-stat-sm text-secondary font-medium">+1.21%</span><span class="font-body-sm text-body-sm text-on-surface-variant">24h Alpha</span></div></div><nav class="flex flex-col gap-space-2xs px-space-md mt-space-sm" data-active-classes="bg-surface-container-high text-primary font-medium rounded-lg"><a class="flex items-center px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-body-md text-body-md" data-path="overview" href="#"><span class="material-symbols-outlined mr-space-md text-[20px]">analytics</span>Overview</a><a class="flex items-center px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-body-md text-body-md" data-path="analytics-and-risk" href="#"><span class="material-symbols-outlined mr-space-md text-[20px]">monitoring</span>Analytics &amp; Risk</a><a class="flex items-center px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-body-md text-body-md" data-path="forecasting-and-simulation" href="#"><span class="material-symbols-outlined mr-space-md text-[20px]">batch_prediction</span>Forecasting &amp; Simulation</a><a class="flex items-center px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-body-md text-body-md" data-path="rebalancing-and-orders" href="#"><span class="material-symbols-outlined mr-space-md text-[20px]">tune</span>Rebalancing &amp; Orders</a><a class="flex items-center px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-body-md text-body-md" data-path="settings-and-api" href="#"><span class="material-symbols-outlined mr-space-md text-[20px]">terminal</span>Settings / API</a></nav></div><div class="p-space-md bg-surface-container-lowest"><div class="p-space-md rounded-lg bg-surface-container-low flex flex-col gap-space-xs"><div class="flex items-center justify-between"><span class="font-label-caps text-label-caps uppercase text-on-surface-variant">Engine Latency</span><span class="font-stat-sm text-stat-sm text-secondary font-medium">0.42 ms</span></div><div class="flex items-center gap-space-xs"><span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span><span class="font-body-sm text-body-sm text-on-surface">NY4 / LD4 Cross-Connect</span></div></div></div></aside><div class="pl-64 flex flex-col min-h-screen"><header class="fixed top-0 left-64 right-0 h-16 bg-surface-container-lowest/90 backdrop-blur-xl z-40 shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 w-full px-space-xl flex items-center justify-between"><div class="flex items-center gap-space-lg"><div class="flex items-center gap-space-xs px-space-sm py-space-2xs rounded-full bg-surface-container-high"><span class="w-2 h-2 rounded-full bg-secondary"></span><span class="font-body-sm text-body-sm text-on-surface font-medium">Engines Active</span></div><div class="flex items-center gap-space-xs px-space-sm py-space-2xs rounded-full bg-surface-container-high"><span class="w-2 h-2 rounded-full bg-primary"></span><span class="font-body-sm text-body-sm text-on-surface font-medium">Market Open</span></div><div class="hidden xl:flex items-center gap-space-xs text-on-surface-variant font-stat-sm text-stat-sm"><span class="material-symbols-outlined text-[16px]">speed</span><span>Tick rate: 4.8k ops/s</span></div></div><div class="flex items-center gap-space-md"><div class="flex items-center bg-surface-container-low rounded-lg p-space-2xs"><button class="px-space-sm py-space-2xs rounded font-stat-sm text-stat-sm bg-surface-container-high text-on-surface font-medium shadow-none transition-all" type="button">USD</button><button class="px-space-sm py-space-2xs rounded font-stat-sm text-stat-sm text-on-surface-variant hover:text-on-surface transition-colors" type="button">EUR</button></div><button class="relative p-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" type="button"><span class="material-symbols-outlined text-[22px]">notifications</span><span class="absolute top-1.5 right-1.5 w-2 h-2 bg-error rounded-full"></span></button><button class="px-space-md py-space-sm rounded-lg bg-surface-container-high hover:bg-surface-bright text-on-surface font-body-sm text-body-sm font-medium transition-colors" type="button">Deposit</button><button class="px-space-md py-space-sm rounded-lg bg-primary text-on-primary font-body-sm text-body-sm font-medium hover:bg-primary-container hover:text-on-primary-container transition-colors" type="button">Rebalance Now</button><div class="flex items-center pl-space-sm ml-space-xs"><img alt="Profile" class="w-8 h-8 rounded-full object-cover ring-1 ring-outline-variant" src="https://lh3.googleusercontent.com/aida/AEtjO1XKBW36_WjsXw10l7xpXOCTgp-sFZM9bPUB0ryGSdrwD-naY4ZvWgEPZAqhtv6nZJVQvCUl9xV4Ymb-bIy1-DXAbfGFxJWhkrw0qzY_LhYe3KL0wa1h1VDXNlG_waYWku0V3BQaO-pAGv-CkxtjeGab3yZVkflg_X48W2buUncZ-c2mNXmrOC0xQmyhjN_0oyFioCzeauViBpr8Td3HN9eZ4V2Ewa5IDUwaUghfjvyZn2cBLM2S-Rz2IQE"/></div></div></div></header><main class="w-full pt-16 bg-background flex-1"><div class="flex flex-col w-full">
+<!-- Sub-Header & Telemetry Ribbon -->
+<section class="w-full bg-surface-container-lowest px-space-xl py-space-sm shadow-sm flex flex-col xl:flex-row xl:items-center justify-between gap-space-md">
+<div class="flex flex-wrap items-center gap-space-md">
+<div class="flex items-center gap-space-xs text-on-surface-variant font-label-caps text-label-caps">
+<span class="text-on-surface">TERMINAL</span>
+<span>/</span>
+<span class="text-primary font-semibold">ORDER EXECUTION &amp; SHARE ALLOCATION</span>
+</div>
+<div class="h-4 w-px bg-surface-container-high hidden md:block"></div>
+<div class="flex items-center gap-space-xs bg-surface-container-low px-space-sm py-1 rounded-full text-on-surface-variant font-stat-sm text-stat-sm">
+<span class="material-symbols-outlined text-[15px] text-primary">hub</span>
+<span class="text-on-surface font-medium">SOR v4.12</span>
+<span class="text-outline text-[11px]">•</span>
+<span class="text-secondary font-stat-sm">NY4/LD4 Co-Lo 0.84ms</span>
+<span class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse ml-0.5"></span>
+</div>
+</div>
+<!-- Live L2 Micro Orderbook Barometer -->
+<div class="flex items-center gap-space-lg bg-surface-container-low px-space-md py-1.5 rounded-lg text-on-surface">
+<div class="flex items-center gap-space-xs">
+<span class="font-label-caps text-label-caps text-outline uppercase">L2 Depth</span>
+<div class="flex items-center gap-1.5 ml-1">
+<span class="font-stat-sm text-stat-sm text-secondary font-medium">$144.20</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">× 4.2k</span>
+</div>
+<div class="w-16 h-1.5 bg-surface-container-high rounded-full overflow-hidden flex mx-1">
+<div class="bg-secondary h-full" style="width: 58%"></div>
+<div class="bg-tertiary-container h-full" style="width: 42%"></div>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="font-stat-sm text-stat-sm text-tertiary font-medium">$144.28</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">× 3.8k</span>
+</div>
+</div>
+<div class="h-4 w-px bg-surface-container-high"></div>
+<div class="flex items-center gap-space-xs font-stat-sm text-stat-sm">
+<span class="text-outline uppercase text-[10px] font-label-caps text-label-caps">Spread</span>
+<span class="font-semibold text-primary">$0.08 (0.05%)</span>
+</div>
+</div>
+</section>
+<!-- Quick Asset Selector / Watch Ticker Strip -->
+<div class="w-full bg-surface-container px-space-xl py-space-sm flex items-center justify-between gap-space-md overflow-x-auto">
+<div class="flex items-center gap-space-sm shrink-0">
+<!-- Active NVDA Chip -->
+<button class="flex items-center gap-space-sm px-space-md py-1.5 rounded-lg bg-surface-container-high text-on-surface shadow-sm cursor-pointer transition-all">
+<div class="w-5 h-5 rounded-full bg-secondary-container/30 flex items-center justify-center text-secondary font-stat-sm text-[10px] font-bold">N</div>
+<div class="flex flex-col text-left leading-none">
+<span class="font-headline-sm text-[13px] font-bold tracking-tight text-on-surface">NVDA</span>
+<span class="font-stat-sm text-[11px] text-on-surface-variant">$144.25</span>
+</div>
+<span class="font-stat-sm text-stat-sm text-secondary font-semibold ml-1">+3.42%</span>
+<span class="w-1.5 h-1.5 rounded-full bg-primary ml-0.5"></span>
+</button>
+<button class="flex items-center gap-space-sm px-space-md py-1.5 rounded-lg bg-surface-container-low hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer">
+<div class="w-5 h-5 rounded-full bg-surface-container-highest flex items-center justify-center text-on-surface text-[10px] font-bold">A</div>
+<span class="font-headline-sm text-[13px] font-semibold">AAPL</span>
+<span class="font-stat-sm text-[11px]">$232.10</span>
+<span class="font-stat-sm text-stat-sm text-secondary font-medium">+0.88%</span>
+</button>
+<button class="flex items-center gap-space-sm px-space-md py-1.5 rounded-lg bg-surface-container-low hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer">
+<div class="w-5 h-5 rounded-full bg-surface-container-highest flex items-center justify-center text-on-surface text-[10px] font-bold">V</div>
+<span class="font-headline-sm text-[13px] font-semibold">VOO</span>
+<span class="font-stat-sm text-[11px]">$518.40</span>
+<span class="font-stat-sm text-stat-sm text-secondary font-medium">+0.45%</span>
+</button>
+<button class="flex items-center gap-space-sm px-space-md py-1.5 rounded-lg bg-surface-container-low hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer">
+<div class="w-5 h-5 rounded-full bg-surface-container-highest flex items-center justify-center text-on-surface text-[10px] font-bold">M</div>
+<span class="font-headline-sm text-[13px] font-semibold">MSFT</span>
+<span class="font-stat-sm text-[11px]">$428.65</span>
+<span class="font-stat-sm text-stat-sm text-tertiary font-medium">-0.32%</span>
+</button>
+<button class="flex items-center gap-space-sm px-space-md py-1.5 rounded-lg bg-surface-container-low hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer">
+<div class="w-5 h-5 rounded-full bg-primary-container/30 flex items-center justify-center text-primary text-[10px] font-bold">₿</div>
+<span class="font-headline-sm text-[13px] font-semibold">IBIT</span>
+<span class="font-stat-sm text-[11px]">$39.75</span>
+<span class="font-stat-sm text-stat-sm text-secondary font-medium">+2.15%</span>
+</button>
+</div>
+<!-- Search input -->
+<div class="relative min-w-[220px]">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[18px]">search</span>
+<input class="w-full bg-surface-container-low text-on-surface placeholder:text-outline text-body-sm font-body-sm pl-9 pr-8 py-1.5 rounded-lg focus:outline-none focus:bg-surface-container-highest" placeholder="Lookup symbol, ISIN, CUSIP..." type="text"/>
+<span class="absolute right-2.5 top-1/2 -translate-y-1/2 bg-surface-container-high text-outline text-[10px] font-stat-sm px-1.5 py-0.5 rounded">⌘K</span>
+</div>
+</div>
+<!-- Primary Workspace Layout -->
+<div class="w-full px-space-xl py-space-lg grid grid-cols-1 lg:grid-cols-12 gap-space-lg">
+<!-- Column 1 & 2: Central Order Entry Console (7 Columns on large screens) -->
+<div class="lg:col-span-7 flex flex-col gap-space-lg">
+<!-- Execution Setup Card -->
+<div class="bg-surface-container rounded-xl p-space-lg shadow-sm flex flex-col gap-space-lg">
+<!-- Header & Side Selector -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-md">
+<div class="flex items-center gap-space-sm">
+<span class="font-headline-md text-headline-md font-bold tracking-tight text-on-surface">NVIDIA Corporation</span>
+<span class="bg-surface-container-high text-primary font-stat-sm text-stat-sm px-2 py-0.5 rounded font-semibold">NVDA • NASDAQ</span>
+</div>
+<!-- Dual Mode Toggle (Buy/Sell) -->
+<div class="flex items-center bg-surface-container-low p-1 rounded-lg">
+<button class="flex items-center gap-1.5 px-space-lg py-1.5 rounded-md bg-secondary text-on-secondary font-headline-sm text-headline-sm font-bold shadow-sm transition-all cursor-pointer" id="side-buy-btn">
+<span class="material-symbols-outlined text-[18px]">north_east</span>
+<span>BUY / LONG</span>
+</button>
+<button class="flex items-center gap-1.5 px-space-lg py-1.5 rounded-md text-on-surface-variant hover:text-on-surface font-headline-sm text-headline-sm font-semibold transition-all cursor-pointer" id="side-sell-btn">
+<span class="material-symbols-outlined text-[18px]">south_east</span>
+<span>SELL / SHORT</span>
+</button>
+</div>
+</div>
+<!-- Order Type Segmented Control -->
+<div class="flex flex-col gap-space-xs">
+<label class="font-label-caps text-label-caps uppercase text-on-surface-variant font-semibold">Execution Mechanism</label>
+<div class="grid grid-cols-5 gap-space-xs bg-surface-container-low p-1 rounded-lg">
+<button class="py-2 text-center rounded font-headline-sm text-[13px] font-semibold bg-surface-container-high text-primary shadow-sm">Market</button>
+<button class="py-2 text-center rounded font-headline-sm text-[13px] font-semibold text-on-surface-variant hover:text-on-surface transition-colors">Limit</button>
+<button class="py-2 text-center rounded font-headline-sm text-[13px] font-semibold text-on-surface-variant hover:text-on-surface transition-colors">Stop-Loss</button>
+<button class="py-2 text-center rounded font-headline-sm text-[13px] font-semibold text-on-surface-variant hover:text-on-surface transition-colors flex items-center justify-center gap-1">
+<span>TWAP</span>
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span>
+</button>
+<button class="py-2 text-center rounded font-headline-sm text-[13px] font-semibold text-on-surface-variant hover:text-on-surface transition-colors flex items-center justify-center gap-1">
+<span>VWAP</span>
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span>
+</button>
+</div>
+</div>
+<!-- Dual Synchronized Inputs: Amount ($) vs Share Units -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-space-md">
+<!-- Cash Allocation Field -->
+<div class="bg-surface-container-low rounded-xl p-space-md flex flex-col justify-between gap-space-sm">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase font-semibold">Investment Capital</span>
+<span class="font-stat-sm text-stat-sm text-secondary font-medium">Max BP: $53,898.00</span>
+</div>
+<div class="relative flex items-center">
+<span class="font-stat-lg text-stat-lg text-primary mr-1 font-bold">$</span>
+<input class="w-full bg-transparent font-stat-lg text-stat-lg font-bold text-on-surface focus:outline-none tracking-tight" id="amount-input" type="text" value="25,000.00"/>
+<button class="px-2 py-1 rounded bg-surface-container-high text-on-surface-variant hover:text-primary font-stat-sm text-stat-sm">USD</button>
+</div>
+<!-- Quick Allocation Percentage Buttons -->
+<div class="grid grid-cols-4 gap-1.5 pt-1">
+<button class="py-1 bg-surface-container-high hover:bg-surface-bright text-on-surface font-stat-sm text-stat-sm rounded transition-colors text-center font-medium">25%</button>
+<button class="py-1 bg-surface-container-high hover:bg-surface-bright text-primary font-stat-sm text-stat-sm rounded transition-colors text-center font-semibold">50%</button>
+<button class="py-1 bg-surface-container-high hover:bg-surface-bright text-on-surface font-stat-sm text-stat-sm rounded transition-colors text-center font-medium">75%</button>
+<button class="py-1 bg-surface-container-high hover:bg-surface-bright text-on-surface font-stat-sm text-stat-sm rounded transition-colors text-center font-medium">100%</button>
+</div>
+</div>
+<!-- Share Quantity Units Field -->
+<div class="bg-surface-container-low rounded-xl p-space-md flex flex-col justify-between gap-space-sm">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase font-semibold">Share Quantity (Units)</span>
+<div class="flex items-center gap-1 text-[11px] font-stat-sm text-primary">
+<span class="material-symbols-outlined text-[13px]">check_circle</span>
+<span>Fractional Enabled</span>
+</div>
+</div>
+<div class="flex items-center justify-between">
+<input class="w-full bg-transparent font-stat-lg text-stat-lg font-bold text-on-surface focus:outline-none tracking-tight" id="shares-input" type="text" value="173.3102"/>
+<div class="flex items-center gap-1 ml-2">
+<button class="w-7 h-7 rounded bg-surface-container-high hover:bg-surface-bright flex items-center justify-center text-on-surface text-stat-md font-bold transition-colors cursor-pointer">-</button>
+<button class="w-7 h-7 rounded bg-surface-container-high hover:bg-surface-bright flex items-center justify-center text-on-surface text-stat-md font-bold transition-colors cursor-pointer">+</button>
+</div>
+</div>
+<!-- Stepper quick tabs -->
+<div class="grid grid-cols-4 gap-1.5 pt-1">
+<button class="py-1 bg-surface-container-high hover:bg-surface-bright text-on-surface font-stat-sm text-stat-sm rounded transition-colors text-center">+10</button>
+<button class="py-1 bg-surface-container-high hover:bg-surface-bright text-on-surface font-stat-sm text-stat-sm rounded transition-colors text-center">+50</button>
+<button class="py-1 bg-surface-container-high hover:bg-surface-bright text-on-surface font-stat-sm text-stat-sm rounded transition-colors text-center">+100</button>
+<button class="py-1 bg-surface-container-high hover:bg-surface-bright text-on-surface font-stat-sm text-stat-sm rounded transition-colors text-center">+500</button>
+</div>
+</div>
+</div>
+<!-- Dynamic Conversion Badge Ribbon -->
+<div class="w-full bg-surface-container-high/60 px-space-md py-2.5 rounded-lg flex items-center justify-between text-on-surface font-stat-sm text-stat-sm">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[18px]">sync_alt</span>
+<span class="text-on-surface-variant font-medium">Equivalence:</span>
+<span class="font-semibold text-on-surface">173.3102 Shares</span>
+<span class="text-outline">@</span>
+<span class="text-secondary font-semibold">$144.25 MKT</span>
+</div>
+<div class="flex items-center gap-1.5 text-on-surface-variant">
+<span>Price source:</span>
+<span class="bg-surface-container-lowest px-1.5 py-0.5 rounded text-[11px] text-on-surface font-mono font-medium">NASDAQ-ITCH L1 Top</span>
+</div>
+</div>
+<!-- Limit Specification & Time In Force -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-space-md">
+<div class="flex flex-col gap-1.5">
+<label class="font-label-caps text-label-caps uppercase text-on-surface-variant font-semibold">Limit Price Cap</label>
+<div class="flex items-center bg-surface-container-low px-space-md py-2.5 rounded-lg">
+<span class="font-stat-sm text-stat-sm text-outline mr-2">$</span>
+<input class="w-full bg-transparent font-stat-md text-stat-md text-on-surface font-medium focus:outline-none" type="text" value="144.25"/>
+<button class="text-[11px] font-stat-sm text-primary font-semibold hover:underline">Peg Midpoint</button>
+</div>
+</div>
+<div class="flex flex-col gap-1.5">
+<label class="font-label-caps text-label-caps uppercase text-on-surface-variant font-semibold">Time In Force (TIF)</label>
+<div class="grid grid-cols-4 gap-1.5 bg-surface-container-low p-1 rounded-lg">
+<button class="py-1.5 rounded font-stat-sm text-stat-sm font-semibold bg-surface-container-high text-on-surface">DAY</button>
+<button class="py-1.5 rounded font-stat-sm text-stat-sm text-on-surface-variant hover:text-on-surface">GTC</button>
+<button class="py-1.5 rounded font-stat-sm text-stat-sm text-on-surface-variant hover:text-on-surface">IOC</button>
+<button class="py-1.5 rounded font-stat-sm text-stat-sm text-on-surface-variant hover:text-on-surface">FOK</button>
+</div>
+</div>
+</div>
+<!-- Advanced Algorithmic Router Parameters (Accordion Style) -->
+<div class="bg-surface-container-low rounded-xl p-space-md flex flex-col gap-space-md">
+<div class="flex items-center justify-between cursor-pointer">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[18px]">tune</span>
+<span class="font-headline-sm text-headline-sm font-semibold text-on-surface">Execution Routing &amp; Dark Liquidity Parameters</span>
+</div>
+<span class="material-symbols-outlined text-outline text-[20px]">expand_less</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-space-md pt-1">
+<div class="flex flex-col gap-1">
+<span class="font-label-caps text-label-caps uppercase text-on-surface-variant">Venue Priority</span>
+<select class="bg-surface-container-high text-on-surface font-body-sm text-body-sm px-space-sm py-2 rounded-lg focus:outline-none">
+<option>Dark Aggregator (Midpoint Match)</option>
+<option>Lit Exchanges Only (Direct IEX)</option>
+<option>Zero-Market-Impact Adaptive</option>
+</select>
+</div>
+<div class="flex flex-col gap-1">
+<span class="font-label-caps text-label-caps uppercase text-on-surface-variant">Max Allowed Slippage</span>
+<div class="flex items-center bg-surface-container-high rounded-lg p-0.5">
+<button class="flex-1 py-1 rounded font-stat-sm text-stat-sm bg-surface-container text-primary font-semibold">0.05%</button>
+<button class="flex-1 py-1 rounded font-stat-sm text-stat-sm text-on-surface-variant">0.10%</button>
+<button class="flex-1 py-1 rounded font-stat-sm text-stat-sm text-on-surface-variant">Custom</button>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<span class="font-label-caps text-label-caps uppercase text-on-surface-variant">Execution Timing</span>
+<div class="flex items-center gap-space-md py-1.5">
+<label class="flex items-center gap-1.5 cursor-pointer">
+<input checked="" class="accent-primary rounded" type="checkbox"/>
+<span class="font-body-sm text-body-sm text-on-surface">Post-Only</span>
+</label>
+<label class="flex items-center gap-1.5 cursor-pointer">
+<input class="accent-primary rounded" type="checkbox"/>
+<span class="font-body-sm text-body-sm text-on-surface">Reduce-Only</span>
+</label>
+</div>
+</div>
+</div>
+</div>
+<!-- Primary Execution Action Zone -->
+<div class="flex flex-col gap-space-sm pt-space-xs">
+<div class="flex flex-col sm:flex-row items-center gap-space-md">
+<!-- Institutional Order Review CTA -->
+<button class="w-full sm:flex-1 py-space-md px-space-lg rounded-xl bg-primary text-on-primary font-headline-sm text-headline-sm font-bold flex items-center justify-center gap-space-sm hover:bg-primary-container hover:text-on-primary-container shadow-md transition-all cursor-pointer">
+<span class="material-symbols-outlined text-[22px]">verified_user</span>
+<span>Transmit Order • 173.31 NVDA ($25,000.00)</span>
+</button>
+<!-- Sandbox Simulation Mode -->
+<button class="w-full sm:w-auto px-space-lg py-space-md rounded-xl bg-surface-container-high hover:bg-surface-bright text-on-surface font-headline-sm text-headline-sm font-semibold flex items-center justify-center gap-2 transition-colors cursor-pointer">
+<span class="material-symbols-outlined text-outline text-[20px]">science</span>
+<span>Simulate</span>
+</button>
+</div>
+<div class="flex items-center justify-between text-outline font-body-sm text-[11px] px-1">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-secondary">gavel</span>
+<span>SEC Rule 606 &amp; Best Execution Compliant Multi-Hub Route</span>
+</div>
+<span>Est. latency to fill: &lt;1.8ms</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Column 3: Pre-Trade Risk Telemetry & Portfolio Impact (5 Columns on large screens) -->
+<div class="lg:col-span-5 flex flex-col gap-space-lg">
+<!-- Real-Time Portfolio Impact Analysis Card -->
+<div class="bg-surface-container rounded-xl p-space-lg shadow-sm flex flex-col gap-space-lg">
+<div class="flex items-center justify-between pb-space-xs">
+<div class="flex items-center gap-space-sm">
+<div class="w-2.5 h-2.5 rounded-full bg-primary animate-pulse"></div>
+<span class="font-headline-sm text-headline-sm font-bold text-on-surface">Pre-Trade Risk &amp; Allocation Shift</span>
+</div>
+<span class="bg-surface-container-high text-on-surface-variant font-label-caps text-label-caps px-2 py-0.5 rounded uppercase">SIMULATED</span>
+</div>
+<!-- Metric 1: Concentration & Allocation Drift (With Corridor Alert) -->
+<div class="bg-surface-container-low rounded-xl p-space-md flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase font-semibold">NVDA Portfolio Weight</span>
+<div class="flex items-center gap-1 font-stat-sm text-stat-sm">
+<span class="text-on-surface-variant">32.4%</span>
+<span class="material-symbols-outlined text-[14px] text-primary">trending_flat</span>
+<span class="text-tertiary font-bold">38.1%</span>
+</div>
+</div>
+<!-- Visual Bar with Corridor Cap -->
+<div class="relative w-full h-3 bg-surface-container-highest rounded-full overflow-hidden">
+<!-- Current allocation -->
+<div class="absolute top-0 bottom-0 left-0 bg-primary/60 rounded-full" style="width: 32.4%"></div>
+<!-- Projected expansion -->
+<div class="absolute top-0 bottom-0 left-[32.4%] bg-tertiary-container/80 rounded-r-full" style="width: 5.7%"></div>
+<!-- Max Corridor Threshold Line at 35% -->
+<div class="absolute top-0 bottom-0 left-[35%] w-0.5 bg-error z-10"></div>
+</div>
+<div class="flex items-center justify-between text-[11px] font-stat-sm">
+<span class="text-outline">Optimal Model Target: 30.0%</span>
+<span class="text-tertiary flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]">warning</span>
+              Exceeds 35.0% Soft Corridor
+            </span>
+</div>
+</div>
+<!-- Metric 2: Systematic Beta & Risk Telemetry Grid -->
+<div class="grid grid-cols-2 gap-space-sm">
+<div class="bg-surface-container-low rounded-lg p-space-md flex flex-col gap-1">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Portfolio Beta Shift</span>
+<div class="flex items-baseline gap-2 mt-1">
+<span class="font-stat-lg text-stat-lg text-on-surface font-semibold">1.08</span>
+<span class="text-secondary font-stat-sm text-stat-sm font-semibold">→ 1.12</span>
+</div>
+<span class="text-body-sm text-[11px] text-outline">Tech sector tilt increased</span>
+</div>
+<div class="bg-surface-container-low rounded-lg p-space-md flex flex-col gap-1">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">99% 1-Day VaR (USD)</span>
+<div class="flex items-baseline gap-2 mt-1">
+<span class="font-stat-lg text-stat-lg text-on-surface font-semibold">$5,120</span>
+<span class="text-tertiary font-stat-sm text-stat-sm font-semibold">+$480</span>
+</div>
+<span class="text-body-sm text-[11px] text-outline">Historical simulation run</span>
+</div>
+</div>
+<!-- Metric 3: Liquidity & Purchasing Power Impact Details -->
+<div class="flex flex-col gap-2 bg-surface-container-low rounded-xl p-space-md">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase font-semibold">Capital Allocation Breakdown</span>
+<div class="flex items-center justify-between py-1 border-b border-surface-container-high/40 text-body-sm text-body-sm">
+<span class="text-on-surface-variant">Free Cash Used</span>
+<span class="font-stat-sm text-stat-sm text-on-surface font-medium">$11,398.00 (100% Cash)</span>
+</div>
+<div class="flex items-center justify-between py-1 border-b border-surface-container-high/40 text-body-sm text-body-sm">
+<span class="text-on-surface-variant">Reg-T Margin Utilized</span>
+<span class="font-stat-sm text-stat-sm text-tertiary font-medium">$13,602.00 @ 5.85% APY</span>
+</div>
+<div class="flex items-center justify-between py-1 border-b border-surface-container-high/40 text-body-sm text-body-sm">
+<span class="text-on-surface-variant">Remaining Buying Power</span>
+<span class="font-stat-sm text-stat-sm text-secondary font-medium">$28,898.00</span>
+</div>
+<div class="flex items-center justify-between py-1 text-body-sm text-body-sm">
+<span class="text-on-surface-variant">Displaced Overnight Yield</span>
+<span class="font-stat-sm text-stat-sm text-tertiary font-medium">-$107.50 / month</span>
+</div>
+</div>
+<!-- Metric 4: Direct Fee & Execution Estimator -->
+<div class="bg-surface-container-high/40 rounded-xl p-space-md flex flex-col gap-2 text-on-surface">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase font-semibold">Execution Friction Est.</span>
+<span class="font-stat-sm text-stat-sm text-secondary font-semibold">$3.60 (0.014%)</span>
+</div>
+<div class="grid grid-cols-3 gap-2 pt-1 text-center font-stat-sm text-[11px]">
+<div class="bg-surface-container-low py-1.5 rounded">
+<div class="text-outline">Broker Comm.</div>
+<div class="text-secondary font-semibold">$0.00</div>
+</div>
+<div class="bg-surface-container-low py-1.5 rounded">
+<div class="text-outline">SEC / FINRA</div>
+<div class="text-on-surface font-semibold">$0.48</div>
+</div>
+<div class="bg-surface-container-low py-1.5 rounded">
+<div class="text-outline">Expected Slip</div>
+<div class="text-on-surface font-semibold">~$3.12</div>
+</div>
+</div>
+</div>
+<!-- Strategy Model Alignment Badge -->
+<div class="flex items-center gap-space-sm bg-surface-container-low p-space-sm rounded-lg">
+<span class="material-symbols-outlined text-secondary text-[22px]">auto_awesome</span>
+<div class="flex flex-col">
+<span class="font-body-sm text-body-sm font-semibold text-on-surface">Momentum Rebalancer Signal</span>
+<span class="font-body-sm text-[11px] text-on-surface-variant">Concurrence score 94.2% • Aligns with Q3 Alpha Tilt #402</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom Workspace Area: Working Orders, Queue & Execution Telemetry -->
+<div class="w-full px-space-xl pb-space-2xl flex flex-col gap-space-md">
+<div class="bg-surface-container rounded-xl p-space-lg shadow-sm flex flex-col gap-space-md">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm">
+<div class="flex items-center gap-space-md">
+<span class="font-headline-sm text-headline-sm font-bold text-on-surface">Active Working Orders &amp; Recent Fills</span>
+<div class="flex items-center gap-1.5 bg-surface-container-high px-2 py-0.5 rounded-full font-stat-sm text-stat-sm text-on-surface-variant">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+<span>3 Active In-Flight</span>
+</div>
+</div>
+<div class="flex items-center gap-space-sm">
+<button class="px-space-md py-1 rounded-md bg-surface-container-high text-on-surface hover:bg-surface-bright font-stat-sm text-stat-sm transition-colors">Export Tape (CSV)</button>
+<button class="px-space-md py-1 rounded-md bg-surface-container-high text-tertiary hover:bg-surface-bright font-stat-sm text-stat-sm transition-colors">Cancel All Unfilled</button>
+</div>
+</div>
+<!-- Institutional Orders Table -->
+<div class="w-full overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low text-on-surface-variant font-label-caps text-label-caps uppercase">
+<th class="py-2.5 px-space-md font-semibold">Timestamp (EST)</th>
+<th class="py-2.5 px-space-md font-semibold">Ticker</th>
+<th class="py-2.5 px-space-md font-semibold">Side</th>
+<th class="py-2.5 px-space-md font-semibold">Type</th>
+<th class="py-2.5 px-space-md font-semibold text-right">Filled / Total</th>
+<th class="py-2.5 px-space-md font-semibold text-right">Avg Price</th>
+<th class="py-2.5 px-space-md font-semibold text-center">Status</th>
+<th class="py-2.5 px-space-md font-semibold">Route / Venue</th>
+<th class="py-2.5 px-space-md font-semibold text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container-high/30 font-body-sm text-body-sm text-on-surface">
+<!-- Order 1: Working TWAP -->
+<tr class="hover:bg-surface-container-high/40 transition-colors">
+<td class="py-3 px-space-md font-stat-sm text-stat-sm text-on-surface-variant">14:22:04.18</td>
+<td class="py-3 px-space-md font-semibold flex items-center gap-1.5">
+<span class="text-on-surface">NVDA</span>
+<span class="text-[10px] text-outline font-stat-sm">USD</span>
+</td>
+<td class="py-3 px-space-md">
+<span class="px-2 py-0.5 rounded font-stat-sm text-stat-sm font-semibold bg-secondary/15 text-secondary">BUY</span>
+</td>
+<td class="py-3 px-space-md text-on-surface-variant font-stat-sm">TWAP (15m)</td>
+<td class="py-3 px-space-md text-right font-stat-sm font-medium">85.00 / 173.31</td>
+<td class="py-3 px-space-md text-right font-stat-sm font-medium">$144.22</td>
+<td class="py-3 px-space-md text-center">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-stat-sm text-[11px] font-semibold bg-primary/15 text-primary">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+                  WORKING
+                </span>
+</td>
+<td class="py-3 px-space-md font-stat-sm text-stat-sm text-on-surface-variant">SOR Dark Match</td>
+<td class="py-3 px-space-md text-right">
+<button class="text-outline hover:text-tertiary transition-colors text-stat-sm font-medium">Cancel</button>
+</td>
+</tr>
+<!-- Order 2: Filled Limit -->
+<tr class="hover:bg-surface-container-high/40 transition-colors">
+<td class="py-3 px-space-md font-stat-sm text-stat-sm text-on-surface-variant">14:18:50.04</td>
+<td class="py-3 px-space-md font-semibold flex items-center gap-1.5">
+<span class="text-on-surface">MSFT</span>
+<span class="text-[10px] text-outline font-stat-sm">USD</span>
+</td>
+<td class="py-3 px-space-md">
+<span class="px-2 py-0.5 rounded font-stat-sm text-stat-sm font-semibold bg-tertiary-container/20 text-tertiary">SELL</span>
+</td>
+<td class="py-3 px-space-md text-on-surface-variant font-stat-sm">Limit ($429.00)</td>
+<td class="py-3 px-space-md text-right font-stat-sm font-medium">50.00 / 50.00</td>
+<td class="py-3 px-space-md text-right font-stat-sm font-medium text-secondary">$429.04</td>
+<td class="py-3 px-space-md text-center">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-stat-sm text-[11px] font-semibold bg-secondary/15 text-secondary">
+<span class="material-symbols-outlined text-[13px]">check</span>
+                  FILLED
+                </span>
+</td>
+<td class="py-3 px-space-md font-stat-sm text-stat-sm text-on-surface-variant">IEX Direct Lit</td>
+<td class="py-3 px-space-md text-right">
+<button class="text-outline hover:text-primary transition-colors text-stat-sm font-medium">View Fill</button>
+</td>
+</tr>
+<!-- Order 3: Queued Market -->
+<tr class="hover:bg-surface-container-high/40 transition-colors">
+<td class="py-3 px-space-md font-stat-sm text-stat-sm text-on-surface-variant">14:12:11.92</td>
+<td class="py-3 px-space-md font-semibold flex items-center gap-1.5">
+<span class="text-on-surface">VOO</span>
+<span class="text-[10px] text-outline font-stat-sm">USD</span>
+</td>
+<td class="py-3 px-space-md">
+<span class="px-2 py-0.5 rounded font-stat-sm text-stat-sm font-semibold bg-secondary/15 text-secondary">BUY</span>
+</td>
+<td class="py-3 px-space-md text-on-surface-variant font-stat-sm">Market</td>
+<td class="py-3 px-space-md text-right font-stat-sm font-medium">20.00 / 20.00</td>
+<td class="py-3 px-space-md text-right font-stat-sm font-medium">$518.38</td>
+<td class="py-3 px-space-md text-center">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-stat-sm text-[11px] font-semibold bg-secondary/15 text-secondary">
+<span class="material-symbols-outlined text-[13px]">check</span>
+                  FILLED
+                </span>
+</td>
+<td class="py-3 px-space-md font-stat-sm text-stat-sm text-on-surface-variant">ARCA Primary</td>
+<td class="py-3 px-space-md text-right">
+<button class="text-outline hover:text-primary transition-colors text-stat-sm font-medium">View Fill</button>
+</td>
+</tr>
+<!-- Order 4: Active Queued IOC -->
+<tr class="hover:bg-surface-container-high/40 transition-colors">
+<td class="py-3 px-space-md font-stat-sm text-stat-sm text-on-surface-variant">14:05:44.20</td>
+<td class="py-3 px-space-md font-semibold flex items-center gap-1.5">
+<span class="text-on-surface">AAPL</span>
+<span class="text-[10px] text-outline font-stat-sm">USD</span>
+</td>
+<td class="py-3 px-space-md">
+<span class="px-2 py-0.5 rounded font-stat-sm text-stat-sm font-semibold bg-secondary/15 text-secondary">BUY</span>
+</td>
+<td class="py-3 px-space-md text-on-surface-variant font-stat-sm">Limit ($231.80)</td>
+<td class="py-3 px-space-md text-right font-stat-sm font-medium">0.00 / 100.00</td>
+<td class="py-3 px-space-md text-right font-stat-sm font-medium text-outline">—</td>
+<td class="py-3 px-space-md text-center">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-stat-sm text-[11px] font-semibold bg-surface-container-highest text-on-surface-variant">
+<span class="w-1.5 h-1.5 rounded-full bg-outline"></span>
+                  RESTING
+                </span>
+</td>
+<td class="py-3 px-space-md font-stat-sm text-stat-sm text-on-surface-variant">BATS BYX Lit</td>
+<td class="py-3 px-space-md text-right">
+<button class="text-outline hover:text-tertiary transition-colors text-stat-sm font-medium">Cancel</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<!-- Interactive JavaScript for Live Synced Order Fields -->
+<script>
+    (function initOrderEntry() {
+      const sharePrice = 144.25;
+      const amountInput = document.getElementById('amount-input');
+      const sharesInput = document.getElementById('shares-input');
+      const buyBtn = document.getElementById('side-buy-btn');
+      const sellBtn = document.getElementById('side-sell-btn');
+
+      if (!amountInput || !sharesInput) return;
+
+      amountInput.addEventListener('input', function(e) {
+        let clean = e.target.value.replace(/[^0-9.]/g, '');
+        let val = parseFloat(clean) || 0;
+        let calculatedShares = (val / sharePrice).toFixed(4);
+        sharesInput.value = calculatedShares;
+      });
+
+      sharesInput.addEventListener('input', function(e) {
+        let clean = e.target.value.replace(/[^0-9.]/g, '');
+        let shares = parseFloat(clean) || 0;
+        let calculatedAmount = (shares * sharePrice).toLocaleString('en-US', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        });
+        amountInput.value = calculatedAmount;
+      });
+
+      if (buyBtn && sellBtn) {
+        buyBtn.addEventListener('click', () => {
+          buyBtn.className = "flex items-center gap-1.5 px-space-lg py-1.5 rounded-md bg-secondary text-on-secondary font-headline-sm text-headline-sm font-bold shadow-sm transition-all cursor-pointer";
+          sellBtn.className = "flex items-center gap-1.5 px-space-lg py-1.5 rounded-md text-on-surface-variant hover:text-on-surface font-headline-sm text-headline-sm font-semibold transition-all cursor-pointer";
+        });
+
+        sellBtn.addEventListener('click', () => {
+          sellBtn.className = "flex items-center gap-1.5 px-space-lg py-1.5 rounded-md bg-tertiary-container text-on-tertiary-container font-headline-sm text-headline-sm font-bold shadow-sm transition-all cursor-pointer";
+          buyBtn.className = "flex items-center gap-1.5 px-space-lg py-1.5 rounded-md text-on-surface-variant hover:text-on-surface font-headline-sm text-headline-sm font-semibold transition-all cursor-pointer";
+        });
+      }
+    })();
+  </script>
+</div></main></div></body></html>

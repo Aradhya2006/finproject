@@ -1,1133 +1,994 @@
+"""RiskLens Quantitative Terminal — Unified API & Dashboard Server
 
-import tempfile
+Serves both the quantitative risk APIs and the web terminal pages.
+Run with:
+    uvicorn app:app --host 0.0.0.0 --port 8000
+or
+    python app.py
+"""
+
 from pathlib import Path
+import os
+import tempfile
+from typing import Dict, Optional
 
-import streamlit as st
+from fastapi import FastAPI, HTTPException, UploadFile, File, Form
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import HTMLResponse
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+import numpy as np
+import pandas as pd
+import torch
+import uvicorn
 
+# Core RiskLens logic imports
 from src.input.portfolio_factory import create_portfolio
-from src.input.ocr import extract_holdings_from_image
+from src.input.manual import validate_holdings
+from src.input.ocr import extract_holdings_detailed
 
+from src.data.store import (
+    BENCHMARK_SYMBOL,
+    has_history,
+    list_symbols,
+    missing_history,
+    save_upload,
+)
+from src.finance.beta import calculate_beta
+from src.finance.dataset import create_price_dataset, calculate_asset_returns, load_clean_asset_data
+from src.finance.portfolio import calculate_portfolio_returns
+from src.finance.correlation import calculate_covariance_matrix, calculate_correlation_matrix
+from src.finance.risk_contribution import calculate_percentage_risk_contribution
 
-# ============================================================
-# PAGE CONFIG
-# ============================================================
-
-st.set_page_config(
-    page_title="Finance Project — Quantitative Terminal",
-    page_icon="◈",
-    layout="wide",
-    initial_sidebar_state="expanded",
+from src.risk.historical_var import calculate_historical_var
+from src.risk.parametric_var import calculate_parametric_var
+from src.risk.historical_cvar import calculate_historical_cvar
+from src.risk.monte_carlo import (
+    simulate_portfolio_returns,
+    calculate_cumulative_returns,
+    calculate_monte_carlo_var,
+    calculate_monte_carlo_cvar,
+)
+from src.risk.scenario import apply_portfolio_shock, apply_broad_market_shock
+from src.risk.chart_series import (
+    monte_carlo_fan,
+    portfolio_value_series,
+    rebase_to,
+    risk_series,
+    to_json_list,
+    value_histogram,
 )
 
+from src.forecasting.garch import fit_garch, forecast_garch_volatility
+from src.forecasting.baseline_evaluation import evaluate_baseline_models
+from src.forecasting.evaluation import calculate_mae, calculate_rmse, calculate_forecast_correlation
+from src.forecasting.evaluation_dataset import create_forward_realized_volatility
+from src.forecasting.dl_preprocessing import prepare_lstm_data
+from src.forecasting.dl_dataset import create_volatility_features
+from src.forecasting.lstm_training import train_lstm
+from src.forecasting.lstm_evaluation import calculate_lstm_metrics
 
-# ============================================================
-# DESIGN SYSTEM — OBSIDIAN QUANTITATIVE
-# ============================================================
 
-st.markdown(
+BASE_DIR = Path(__file__).resolve().parent
+STATIC_DIR = BASE_DIR / "static"
+
+# Largest screenshot accepted by the OCR endpoint.
+MAX_OCR_BYTES = 10 * 1024 * 1024
+OCR_IMAGE_TYPES = {".png", ".jpg", ".jpeg", ".bmp", ".webp", ".tif", ".tiff"}
+
+app = FastAPI(title="RiskLens Quantitative Terminal", version="2.0.0")
+
+# Enable CORS for local development and external clients. Credentials are
+# not used by the frontend, so they stay off (browsers reject "*" with them).
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Mount static files
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+
+# Sector mapping for equities
+SECTOR_MAP = {
+    "TCS": "IT",
+    "INFY": "IT",
+    "HCLTECH": "IT",
+    "WIPRO": "IT",
+    "RELIANCE": "ENERGY",
+    "HDFCBANK": "BANKING",
+    "ICICIBANK": "BANKING",
+    "SBIN": "BANKING",
+}
+
+# No hardcoded portfolio. The session starts empty and is filled by the user
+# (manual entry, JSON/CSV paste, or OCR). The browser sends its own holdings
+# with each request; the session is only the fallback when none are sent.
+session_state: Dict[str, Dict[str, float]] = {"holdings": {}}
+
+
+def _resolve_holdings(request) -> dict:
+    """Holdings from the request body, else the session. Empty if neither."""
+    if request and request.holdings:
+        return request.holdings
+    return session_state["holdings"]
+
+# In-memory cache for slow ML/forecasting models
+_FORECAST_CACHE: Dict[str, dict] = {}
+
+
+def _holdings_cache_key(holdings: dict) -> str:
+    return str(sorted(holdings.items()))
+
+
+def _build_portfolio_and_returns(holdings: dict):
     """
-    <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
-
-    :root {
-        --bg: #090d16;
-        --surface-1: #0f172a;
-        --surface-2: #131e36;
-        --surface-3: #1e293b;
-        --cyan: #06b6d4;
-        --cyan-light: #38bdf8;
-        --green: #10b981;
-        --red: #f43f5e;
-        --amber: #f59e0b;
-        --text: #f8fafc;
-        --muted: #94a3b8;
-        --dim: #64748b;
-        --border: rgba(148,163,184,.12);
-    }
-
-    html, body, [class*="css"] {
-        font-family: 'Inter', sans-serif;
-    }
-
-    .stApp {
-        background:
-            radial-gradient(circle at 85% 5%, rgba(6,182,212,.055), transparent 25%),
-            var(--bg);
-        color: var(--text);
-    }
-
-    #MainMenu, footer, header[data-testid="stHeader"] {
-        visibility: hidden;
-    }
-
-    [data-testid="stSidebar"] {
-        background: #0a0e17;
-        border-right: 1px solid var(--border);
-    }
-
-    [data-testid="stSidebarContent"] {
-        padding-top: 1rem;
-    }
-
-    .block-container {
-        max-width: 1480px;
-        padding: 5.5rem 2rem 3rem 2rem;
-    }
-
-    /* Typography */
-    .mono {
-        font-family: 'JetBrains Mono', monospace;
-        font-variant-numeric: tabular-nums;
-    }
-
-    .eyebrow {
-        color: var(--muted);
-        font-size: 11px;
-        line-height: 14px;
-        font-weight: 600;
-        letter-spacing: .08em;
-        text-transform: uppercase;
-    }
-
-    .page-title {
-        font-size: 30px;
-        line-height: 38px;
-        font-weight: 700;
-        letter-spacing: -.025em;
-        margin: 0;
-    }
-
-    .page-subtitle {
-        color: var(--muted);
-        font-size: 14px;
-        margin-top: 5px;
-    }
-
-    /* Cards */
-    .card {
-        background: rgba(15,23,42,.94);
-        border: 1px solid var(--border);
-        border-radius: 16px;
-        padding: 20px;
-    }
-
-    .card-tight {
-        background: rgba(15,23,42,.94);
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        padding: 14px;
-    }
-
-    .card-accent {
-        background:
-            linear-gradient(180deg, rgba(6,182,212,.08), rgba(15,23,42,.96) 45%);
-        border: 1px solid rgba(6,182,212,.25);
-        border-radius: 16px;
-        padding: 20px;
-    }
-
-    .warning-card {
-        background: rgba(245,158,11,.08);
-        border: 1px solid rgba(245,158,11,.22);
-        border-radius: 12px;
-        padding: 14px 16px;
-    }
-
-    .success-card {
-        background: rgba(16,185,129,.08);
-        border: 1px solid rgba(16,185,129,.22);
-        border-radius: 12px;
-        padding: 14px 16px;
-    }
-
-    /* Metric cards */
-    .metric-label {
-        color: var(--muted);
-        font-size: 11px;
-        line-height: 14px;
-        font-weight: 600;
-        letter-spacing: .07em;
-        text-transform: uppercase;
-    }
-
-    .metric-value {
-        color: var(--text);
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 24px;
-        line-height: 30px;
-        font-weight: 600;
-        margin-top: 8px;
-    }
-
-    .metric-meta {
-        color: var(--dim);
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 11px;
-        margin-top: 6px;
-    }
-
-    .green { color: var(--green); }
-    .cyan { color: var(--cyan-light); }
-    .red { color: var(--red); }
-    .amber { color: var(--amber); }
-
-    /* Sidebar branding */
-    .brand {
-        padding: 4px 8px 18px 8px;
-    }
-
-    .brand-name {
-        font-size: 19px;
-        font-weight: 700;
-        letter-spacing: -.02em;
-    }
-
-    .brand-sub {
-        color: var(--cyan);
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 10px;
-        letter-spacing: .08em;
-        text-transform: uppercase;
-        margin-top: 2px;
-    }
-
-    .telemetry {
-        background: #111827;
-        border: 1px solid var(--border);
-        border-radius: 10px;
-        padding: 10px;
-        margin-bottom: 14px;
-    }
-
-    .telemetry-row {
-        display: flex;
-        justify-content: space-between;
-        gap: 10px;
-        font-size: 11px;
-        color: var(--muted);
-        margin: 3px 0;
-    }
-
-    .telemetry-value {
-        color: var(--text);
-        font-family: 'JetBrains Mono', monospace;
-    }
-
-    .status-dot {
-        display: inline-block;
-        width: 7px;
-        height: 7px;
-        border-radius: 50%;
-        background: var(--green);
-        box-shadow: 0 0 10px rgba(16,185,129,.55);
-        margin-right: 5px;
-    }
-
-    /* Top terminal strip */
-    .terminal-strip {
-        position: fixed;
-        z-index: 999;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 54px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 0 26px;
-        background: rgba(9,13,22,.88);
-        backdrop-filter: blur(18px);
-        border-bottom: 1px solid var(--border);
-    }
-
-    .market-pill {
-        display: flex;
-        gap: 18px;
-        align-items: center;
-        background: rgba(15,23,42,.86);
-        border: 1px solid var(--border);
-        border-radius: 9px;
-        padding: 7px 12px;
-    }
-
-    .market-item {
-        display: flex;
-        gap: 8px;
-        align-items: baseline;
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 11px;
-    }
-
-    .market-name {
-        color: var(--muted);
-        font-family: 'Inter', sans-serif;
-        font-size: 10px;
-        font-weight: 600;
-        letter-spacing: .06em;
-    }
-
-    .top-right {
-        color: var(--muted);
-        font-size: 11px;
-    }
-
-    /* Stepper */
-    .stepper {
-        display: flex;
-        align-items: center;
-        gap: 0;
-        margin: 18px 0 24px 0;
-    }
-
-    .step {
-        display: flex;
-        align-items: center;
-        gap: 7px;
-        color: var(--muted);
-        font-size: 11px;
-    }
-
-    .step.active {
-        color: var(--cyan-light);
-    }
-
-    .step-number {
-        width: 22px;
-        height: 22px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 50%;
-        border: 1px solid #334155;
-        background: #111827;
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 10px;
-    }
-
-    .step.active .step-number {
-        border-color: var(--cyan);
-        background: rgba(6,182,212,.12);
-        color: var(--cyan-light);
-    }
-
-    .step-line {
-        width: 42px;
-        height: 1px;
-        background: #253044;
-        margin: 0 9px;
-    }
-
-    /* Streamlit controls */
-    .stButton > button {
-        border-radius: 10px;
-        min-height: 42px;
-        font-weight: 600;
-        border: 1px solid rgba(148,163,184,.15);
-        background: #131e36;
-        color: var(--text);
-    }
-
-    .stButton > button[kind="primary"] {
-        background: var(--cyan);
-        color: #04151b;
-        border-color: var(--cyan);
-        box-shadow: 0 0 18px rgba(6,182,212,.18);
-    }
-
-    .stButton > button:hover {
-        border-color: rgba(6,182,212,.45);
-        color: var(--text);
-    }
-
-    div[data-testid="stFileUploader"] {
-        background: #0b1320;
-        border: 1px dashed rgba(6,182,212,.30);
-        border-radius: 12px;
-        padding: 8px;
-    }
-
-    div[data-baseweb="tab-list"] {
-        gap: 4px;
-        background: #0b1320;
-        border: 1px solid var(--border);
-        border-radius: 10px;
-        padding: 4px;
-    }
-
-    button[data-baseweb="tab"] {
-        border-radius: 8px;
-    }
-
-    /* Hide default dataframe chrome as much as possible */
-    [data-testid="stDataFrame"] {
-        border-radius: 10px;
-        overflow: hidden;
-    }
-
-    hr {
-        border-color: var(--border);
-    }
-
-    @media (max-width: 900px) {
-        .block-container {
-            padding-left: 1rem;
-            padding-right: 1rem;
-        }
-
-        .terminal-strip {
-            padding: 0 12px;
-        }
-
-        .market-pill {
-            display: none;
-        }
-    }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
-
-
-# ============================================================
-# SESSION STATE
-# ============================================================
-
-if "portfolio" not in st.session_state:
-    st.session_state.portfolio = None
-
-if "ocr_holdings" not in st.session_state:
-    st.session_state.ocr_holdings = None
-
-if "ocr_image_path" not in st.session_state:
-    st.session_state.ocr_image_path = None
-
-
-# ============================================================
-# SIDEBAR
-# ============================================================
-
-with st.sidebar:
-    st.markdown(
-        """
-        <div class="brand">
-            <div class="brand-name">Finance Project</div>
-            <div class="brand-sub">Quantitative Terminal</div>
-        </div>
-
-        <div class="telemetry">
-            <div class="telemetry-row">
-                <span>Data source</span>
-                <span class="telemetry-value">NSE India</span>
-            </div>
-            <div class="telemetry-row">
-                <span>Historical range</span>
-                <span class="telemetry-value">2015 → Latest</span>
-            </div>
-            <div class="telemetry-row">
-                <span>Engine</span>
-                <span class="telemetry-value">
-                    <span class="status-dot"></span>READY
-                </span>
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    page = st.radio(
-        "NAVIGATION",
-        [
-            "Portfolio & Ingestion",
-            "Static & Dynamic Risk",
-            "Volatility Models",
-            "Monte Carlo & Stress",
-        ],
-        label_visibility="visible",
-    )
-
-    st.markdown("---")
-
-    portfolio = st.session_state.portfolio
-
-    if portfolio is not None:
-        st.markdown(
-            f"""
-            <div class="card-tight">
-                <div class="eyebrow">Current Portfolio</div>
-                <div class="metric-value" style="font-size:18px;">
-                    ₹{portfolio.portfolio_value:,.0f}
-                </div>
-                <div class="metric-meta">
-                    {len(portfolio.assets)} assets · {portfolio.source.upper()}
-                </div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
-
-# ============================================================
-# TOP TERMINAL BAR
-# ============================================================
-
-st.markdown(
+    Shared quantitative setup: build portfolio object, fetch price history,
+    and compute individual asset and aggregate returns series.
     """
-    <div class="terminal-strip">
-        <div class="market-pill">
-            <div class="market-item">
-                <span class="market-name">NIFTY 50</span>
-                <span>—</span>
-                <span class="green">Data available</span>
-            </div>
-            <div style="width:1px;height:18px;background:#273246;"></div>
-            <div class="market-item">
-                <span class="market-name">DATA</span>
-                <span>2015 → Latest</span>
-            </div>
-        </div>
-        <div class="top-right">
-            Finance Project · Quantitative Risk Engine
-        </div>
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
+    missing = missing_history(list(holdings))
+    if missing:
+        raise ValueError(
+            f"No price history for {', '.join(missing)}. "
+            "Upload NSE history for these stocks on the Ingestion page first."
+        )
 
+    portfolio = create_portfolio("manual", holdings)
+    symbols = list(holdings.keys())
+    price_data = create_price_dataset(symbols)
+    asset_returns = calculate_asset_returns(price_data)
 
-# ============================================================
-# HELPERS
-# ============================================================
-
-def render_page_header(title, subtitle):
-    st.markdown(
-        f"""
-        <div>
-            <div class="eyebrow">Finance Project / {page.upper()}</div>
-            <h1 class="page-title">{title}</h1>
-            <div class="page-subtitle">{subtitle}</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
+    returns_df = calculate_portfolio_returns(asset_returns, portfolio.weights)
+    returns_series = (
+        returns_df.set_index("DATE")["PORTFOLIO RETURN"].dropna()
     )
 
-
-def render_stepper(active_step):
-    labels = [
-        "Portfolio Input",
-        "Risk Engine",
-        "Forecasting",
-        "Simulation",
-    ]
-
-    html = '<div class="stepper">'
-    for i, label in enumerate(labels, start=1):
-        active = "active" if i == active_step else ""
-        html += f"""
-            <div class="step {active}">
-                <div class="step-number">{i}</div>
-                <span>{label}</span>
-            </div>
-        """
-        if i < len(labels):
-            html += '<div class="step-line"></div>'
-    html += "</div>"
-
-    st.markdown(html, unsafe_allow_html=True)
-
-
-def portfolio_summary(portfolio):
-    if portfolio is None:
-        return
-
-    st.markdown("### Portfolio Snapshot")
-
-    cols = st.columns(4)
-
-    metrics = [
-        ("Portfolio Value", f"₹{portfolio.portfolio_value:,.2f}", "Current valuation"),
-        ("Assets", str(len(portfolio.assets)), "Holdings detected"),
-        ("Input Source", portfolio.source.upper(), "Portfolio ingestion"),
-        ("Weight Check", "100.00%", "Validated allocation"),
-    ]
-
-    for col, (label, value, meta) in zip(cols, metrics):
-        with col:
-            st.markdown(
-                f"""
-                <div class="card-tight">
-                    <div class="metric-label">{label}</div>
-                    <div class="metric-value" style="font-size:20px;">{value}</div>
-                    <div class="metric-meta">{meta}</div>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
+    return portfolio, asset_returns, returns_df, returns_series
 
 
 # ============================================================
-# PAGE 1 — PORTFOLIO & INGESTION
+# DATA MODELS
 # ============================================================
 
-if page == "Portfolio & Ingestion":
+class HoldingsRequest(BaseModel):
+    holdings: Optional[Dict[str, float]] = None
 
-    render_page_header(
-        "Portfolio & Ingestion",
-        "Convert a real portfolio into a verified, standardized input for the risk engine.",
-    )
-    render_stepper(1)
 
-    left, right = st.columns([1.65, 1], gap="large")
+# Periods the user page offers, in trading days.
+PERIOD_DAYS = {"1w": 5, "1m": 21, "3m": 63, "6m": 126, "1y": 252}
 
-    with left:
-        st.markdown(
-            """
-            <div class="card-accent">
-                <div class="eyebrow">Input Gateway</div>
-                <h2 style="margin:5px 0 4px 0;">Enter Your Portfolio</h2>
-                <div style="color:#94a3b8;font-size:13px;">
-                    Choose how the current portfolio should enter the quantitative pipeline.
-                </div>
-            </div>
-            """,
-            unsafe_allow_html=True,
+
+class PeriodRequest(HoldingsRequest):
+    period: str = "1m"
+
+
+# ============================================================
+# HTML DASHBOARD ROUTES
+# ============================================================
+
+@app.get("/", response_class=HTMLResponse)
+async def read_home():
+    """The user-facing page: enter a portfolio, see the result."""
+    path = Path(STATIC_DIR, "home.html")
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="Page not found.")
+    return path.read_text(encoding="utf-8")
+
+
+@app.get("/admin", response_class=HTMLResponse)
+async def read_admin():
+    """Admin tools: data upload, risk models, and the analysis dashboards."""
+    path = Path(STATIC_DIR, "admin.html")
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="Admin page not found.")
+    return path.read_text(encoding="utf-8")
+
+
+@app.get("/overview", response_class=HTMLResponse)
+async def read_overview():
+    path = Path(STATIC_DIR, "index.html")
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="Overview page not found.")
+    return path.read_text(encoding="utf-8")
+
+
+@app.get("/ingestion", response_class=HTMLResponse)
+async def read_ingestion():
+    path = Path(STATIC_DIR, "ingestion.html")
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="Ingestion page not found.")
+    return path.read_text(encoding="utf-8")
+
+
+@app.get("/risk", response_class=HTMLResponse)
+async def read_risk():
+    path = Path(STATIC_DIR, "risk.html")
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="Risk page not found.")
+    return path.read_text(encoding="utf-8")
+
+
+@app.get("/volatility", response_class=HTMLResponse)
+async def read_volatility():
+    path = Path(STATIC_DIR, "volatility.html")
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="Volatility page not found.")
+    return path.read_text(encoding="utf-8")
+
+
+@app.get("/monte-carlo", response_class=HTMLResponse)
+async def read_monte_carlo():
+    path = Path(STATIC_DIR, "monte_carlo.html")
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="Monte Carlo page not found.")
+    return path.read_text(encoding="utf-8")
+
+
+@app.get("/kinetix", response_class=HTMLResponse)
+async def read_kinetix():
+    path = Path(STATIC_DIR, "kinetix.html")
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="Kinetix page not found.")
+    return path.read_text(encoding="utf-8")
+
+
+# ============================================================
+# API ENDPOINTS
+# ============================================================
+
+@app.get("/health")
+def health():
+    return {"status": "ok", "app": "RiskLens Quantitative Terminal"}
+
+
+@app.get("/api/symbols")
+def get_symbols():
+    """
+    Every stock with stored price history, read from the data folder on each
+    call, so newly uploaded stocks appear without a restart.
+    """
+    return {
+        "symbols": list_symbols(),
+        "benchmark": BENCHMARK_SYMBOL,
+        "benchmark_available": has_history(BENCHMARK_SYMBOL),
+    }
+
+
+@app.post("/api/data/upload")
+async def upload_price_history(symbol: str = Form(...), file: UploadFile = File(...)):
+    """
+    Store a daily price CSV for a symbol so it can be valued and analysed.
+
+    Accepts NSE exports and generic files with Date and Close columns.
+    Upload the benchmark as symbol NIFTY50 to enable beta.
+    """
+    try:
+        content = await file.read()
+        result = save_upload(symbol, content)
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+    # Cached forecasts were built from the old data.
+    _FORECAST_CACHE.clear()
+
+    return {"status": "success", **result}
+
+
+@app.get("/api/portfolio/current")
+def get_current_portfolio():
+    """Retrieve the current active portfolio stored in session."""
+    holdings = session_state["holdings"]
+    if not holdings:
+        return {
+            "status": "empty",
+            "holdings": {},
+            "rows": [],
+            "message": "No holdings yet. Add stocks on the Ingestion page.",
+        }
+    try:
+        portfolio = create_portfolio("manual", holdings)
+        price_sources = getattr(portfolio, "price_sources", {})
+        rows = [
+            {
+                "symbol": symbol,
+                "sector": SECTOR_MAP.get(symbol, "UNCLASSIFIED"),
+                "quantity": portfolio.holdings[symbol],
+                "price": portfolio.prices[symbol],
+                "value": portfolio.holding_values[symbol],
+                "weight": portfolio.weights[symbol],
+                "price_source": price_sources.get(symbol, "csv"),
+            }
+            for symbol in portfolio.assets
+        ]
+        rows.sort(key=lambda r: r["weight"], reverse=True)
+        return {
+            "status": "success",
+            "portfolio_value": portfolio.portfolio_value,
+            "holdings_count": len(portfolio.assets),
+            "holdings": holdings,
+            "rows": rows,
+            "price_sources": price_sources,
+            "live_prices": all(
+                v == "live" for v in price_sources.values()
+            ),
+        }
+    except Exception as exc:
+        return {
+            "status": "partial",
+            "holdings": holdings,
+            "error": str(exc),
+        }
+
+
+@app.post("/api/portfolio/save")
+def save_portfolio(request: HoldingsRequest):
+    """Save user-updated holdings to current session state."""
+    if not request.holdings:
+        raise HTTPException(status_code=400, detail="Holdings cannot be empty.")
+    try:
+        holdings = validate_holdings(request.holdings)
+        portfolio = create_portfolio("manual", holdings)
+        session_state["holdings"] = holdings
+        return {
+            "status": "success",
+            "portfolio_value": portfolio.portfolio_value,
+            "holdings_count": len(portfolio.assets),
+            "holdings": holdings,
+        }
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.post("/api/portfolio/holdings")
+def portfolio_holdings(request: Optional[HoldingsRequest] = None):
+    """
+    Live portfolio valuation: current closing prices, holding values,
+    and weights per symbol. Backs Ingested Asset Validation table.
+
+    Holdings with no stored price history are listed in missing_symbols
+    and left out of the valuation, so the rest of the portfolio still shows.
+    """
+    holdings = _resolve_holdings(request)
+    if not holdings:
+        raise HTTPException(status_code=400, detail="Holdings cannot be empty.")
+
+    try:
+        holdings = validate_holdings(holdings)
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+    missing = missing_history(list(holdings))
+    usable = {symbol: qty for symbol, qty in holdings.items() if symbol not in missing}
+
+    if not usable:
+        return {
+            "portfolio_value": 0.0,
+            "holdings_count": 0,
+            "rows": [],
+            "missing_symbols": missing,
+        }
+
+    try:
+        portfolio = create_portfolio("manual", usable)
+
+        rows = []
+        for symbol in portfolio.assets:
+            rows.append({
+                "symbol": symbol,
+                "sector": SECTOR_MAP.get(symbol, "UNCLASSIFIED"),
+                "quantity": portfolio.holdings[symbol],
+                "price": portfolio.prices[symbol],
+                "value": portfolio.holding_values[symbol],
+                "weight": portfolio.weights[symbol],
+                "price_source": getattr(portfolio, "price_sources", {}).get(symbol, "csv"),
+            })
+
+        rows.sort(key=lambda r: r["weight"], reverse=True)
+
+        return {
+            "portfolio_value": portfolio.portfolio_value,
+            "holdings_count": len(portfolio.assets),
+            "rows": rows,
+            "missing_symbols": missing,
+        }
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.post("/api/portfolio/ocr")
+async def ocr_upload(file: UploadFile = File(...)):
+    """
+    Extract portfolio holdings from an uploaded brokerage screenshot (Zerodha Kite, Groww).
+
+    Returns the detected holdings, the real OCR confidence (0-1), and the
+    detected tickers that have no stored price history yet (missing_symbols).
+    """
+    suffix = Path(file.filename or "").suffix.lower() or ".png"
+    tmp_path = None
+
+    try:
+        if suffix not in OCR_IMAGE_TYPES:
+            raise ValueError(f"Unsupported image type '{suffix}'. Use PNG, JPG, BMP, WEBP or TIFF.")
+
+        content = await file.read()
+
+        if not content:
+            raise ValueError("Uploaded file is empty.")
+
+        if len(content) > MAX_OCR_BYTES:
+            raise ValueError("Screenshot is larger than 10 MB.")
+
+        with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+            tmp.write(content)
+            tmp_path = tmp.name
+
+        result = extract_holdings_detailed(tmp_path)
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    finally:
+        if tmp_path and os.path.exists(tmp_path):
+            os.remove(tmp_path)
+
+    detected_holdings = result["holdings"]
+
+    # The detected holdings become the session portfolio.
+    session_state["holdings"] = detected_holdings
+
+    return {
+        "status": "success",
+        "detected_holdings": detected_holdings,
+        "count": len(detected_holdings),
+        "raw_text": result["raw_text"][:500],
+        "confidence": result["confidence"],
+        "missing_symbols": missing_history(list(detected_holdings)),
+    }
+
+
+@app.post("/api/portfolio/risk")
+def portfolio_risk(request: Optional[HoldingsRequest] = None):
+    """
+    Calculate Static vs Dynamic Risk metrics (VaR 95%, CVaR 95%, Euler risk decomposition).
+    """
+    holdings = _resolve_holdings(request)
+    if not holdings:
+        raise HTTPException(status_code=400, detail="Holdings cannot be empty.")
+
+    try:
+        portfolio, asset_returns, returns_df, returns_series = _build_portfolio_and_returns(holdings)
+
+        annualized_vol_static = returns_series.std(ddof=1) * np.sqrt(252)
+
+        garch_result = fit_garch(returns_series)
+        daily_vol_forecast = float(
+            forecast_garch_volatility(garch_result, horizon=1).iloc[0]
         )
+        annualized_vol_garch = daily_vol_forecast * np.sqrt(252)
 
-        input_method = st.segmented_control(
-            "Portfolio source",
-            [
-                "Screenshot / OCR",
-                "Manual Holdings",
-                "Portfolio Values",
-            ],
-            default="Screenshot / OCR",
-            label_visibility="collapsed",
+        hist_var = calculate_historical_var(returns_series, confidence_level=0.95)
+        param_var = calculate_parametric_var(returns_series, confidence_level=0.95)
+        hist_cvar = calculate_historical_cvar(returns_series, confidence_level=0.95)
+
+        # Risk contribution breakdown
+        covariance_matrix = calculate_covariance_matrix(asset_returns)
+        pct_contribution = calculate_percentage_risk_contribution(
+            portfolio.weights, covariance_matrix
         )
+        top_symbol = max(pct_contribution, key=pct_contribution.get)
 
-        # ----------------------------------------------
-        # OCR
-        # ----------------------------------------------
+        contributions = [
+            {
+                "symbol": symbol,
+                "sector": SECTOR_MAP.get(symbol, "UNCLASSIFIED"),
+                "weight": float(portfolio.weights[symbol]),
+                "risk_contribution": float(pct_contribution[symbol]),
+                "drag": float(pct_contribution[symbol] - portfolio.weights[symbol]),
+            }
+            for symbol in portfolio.assets
+        ]
+        contributions.sort(key=lambda c: c["risk_contribution"], reverse=True)
 
-        if input_method == "Screenshot / OCR":
-
-            st.markdown(
-                """
-                <div class="card" style="margin-top:14px;">
-                    <div class="eyebrow">Optical Scanner</div>
-                    <h3 style="margin:5px 0;">Portfolio Screenshot</h3>
-                    <div style="color:#94a3b8;font-size:12px;">
-                        Tesseract extracts asset symbols and quantities.
-                        Detected values are never silently modified.
-                    </div>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-
-            uploaded_file = st.file_uploader(
-                "Upload brokerage screenshot",
-                type=["png", "jpg", "jpeg"],
-                label_visibility="visible",
-            )
-
-            if uploaded_file is not None:
-
-                suffix = Path(uploaded_file.name).suffix or ".png"
-
-                temp_file = tempfile.NamedTemporaryFile(
-                    delete=False,
-                    suffix=suffix,
-                )
-                temp_file.write(uploaded_file.getbuffer())
-                temp_file.close()
-
-                st.session_state.ocr_image_path = temp_file.name
-
-                preview_col, control_col = st.columns([1.4, 1])
-
-                with preview_col:
-                    st.image(
-                        uploaded_file,
-                        caption=uploaded_file.name,
-                        width="stretch",
-                    )
-
-                with control_col:
-                    st.markdown(
-                        """
-                        <div class="card-tight">
-                            <div class="eyebrow">OCR Pipeline</div>
-                            <div style="margin-top:8px;font-size:13px;">
-                                Image → OCR → Symbol/Quantity extraction
-                            </div>
-                            <div class="metric-meta" style="margin-top:10px;">
-                                Tesseract OCR
-                            </div>
-                        </div>
-                        """,
-                        unsafe_allow_html=True,
-                    )
-
-                    if st.button(
-                        "Extract Holdings",
-                        type="primary",
-                        width="stretch",
-                    ):
-                        try:
-                            holdings = extract_holdings_from_image(
-                                temp_file.name
-                            )
-                            st.session_state.ocr_holdings = holdings
-
-                            if holdings:
-                                st.success(
-                                    f"Detected {len(holdings)} holding(s)."
-                                )
-                            else:
-                                st.warning(
-                                    "No holdings were detected. Try a clearer screenshot."
-                                )
-
-                        except Exception as exc:
-                            st.error(str(exc))
-
-            if st.session_state.ocr_holdings:
-                st.markdown(
-                    """
-                    <div class="warning-card" style="margin-top:14px;">
-                        <b style="color:#f59e0b;">OCR Verification Protocol</b><br>
-                        <span style="color:#cbd5e1;font-size:12px;">
-                        Review every detected symbol and quantity before the portfolio
-                        enters downstream risk calculations.
-                        </span>
-                    </div>
-                    """,
-                    unsafe_allow_html=True,
-                )
-
-                st.markdown("#### Detected Holdings")
-
-                rows = [
-                    {
-                        "Asset Symbol": symbol,
-                        "Quantity": quantity,
-                    }
-                    for symbol, quantity in st.session_state.ocr_holdings.items()
-                ]
-
-                verified_rows = st.data_editor(
-                    rows,
-                    num_rows="dynamic",
-                    width="stretch",
-                    hide_index=True,
-                    column_config={
-                        "Asset Symbol": st.column_config.TextColumn(
-                            "Asset Symbol",
-                            required=True,
-                        ),
-                        "Quantity": st.column_config.NumberColumn(
-                            "Quantity",
-                            min_value=0.0,
-                            step=1.0,
-                            required=True,
-                        ),
-                    },
-                    key="ocr_verification_editor",
-                )
-
-                c1, c2 = st.columns([1, 1])
-
-                with c1:
-                    if st.button(
-                        "Confirm & Continue",
-                        type="primary",
-                        width="stretch",
-                    ):
-                        confirmed = {}
-
-                        try:
-                            for row in verified_rows:
-                                symbol = str(
-                                    row["Asset Symbol"]
-                                ).strip().upper()
-
-                                quantity = float(row["Quantity"])
-
-                                if symbol and quantity > 0:
-                                    confirmed[symbol] = quantity
-
-                            if not confirmed:
-                                st.error(
-                                    "Please confirm at least one valid holding."
-                                )
-                            else:
-                                portfolio = create_portfolio(
-                                    "ocr",
-                                    st.session_state.ocr_image_path,
-                                    confirmed_holdings=confirmed,
-                                )
-
-                                st.session_state.portfolio = portfolio
-                                st.session_state.ocr_holdings = confirmed
-
-                                st.success(
-                                    "Portfolio verified and standardized."
-                                )
-
-                        except Exception as exc:
-                            st.error(str(exc))
-
-                with c2:
-                    if st.button(
-                        "Discard OCR Results",
-                        width="stretch",
-                    ):
-                        st.session_state.ocr_holdings = None
-                        st.session_state.ocr_image_path = None
-                        st.rerun()
-
-        # ----------------------------------------------
-        # MANUAL
-        # ----------------------------------------------
-
-        elif input_method == "Manual Holdings":
-
-            st.markdown(
-                """
-                <div class="card" style="margin-top:14px;">
-                    <div class="eyebrow">Manual Gateway</div>
-                    <h3 style="margin:5px 0;">Current Holdings</h3>
-                    <div style="color:#94a3b8;font-size:12px;">
-                        Enter ticker symbols and quantities. Current prices are
-                        resolved from the local NSE dataset.
-                    </div>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-
-            rows = st.data_editor(
-                [{"Symbol": "", "Quantity": 0.0}],
-                num_rows="dynamic",
-                width="stretch",
-                hide_index=True,
-                column_config={
-                    "Symbol": st.column_config.TextColumn(
-                        "Asset Symbol",
-                        help="Example: TCS",
-                    ),
-                    "Quantity": st.column_config.NumberColumn(
-                        "Quantity",
-                        min_value=0.0,
-                        step=1.0,
-                    ),
-                },
-                key="manual_editor",
-            )
-
-            if st.button(
-                "Create Portfolio",
-                type="primary",
-                width="stretch",
-            ):
-                holdings = {}
-
-                for row in rows:
-                    symbol = str(row["Symbol"]).strip().upper()
-                    quantity = float(row["Quantity"])
-
-                    if symbol and quantity > 0:
-                        holdings[symbol] = quantity
-
-                if not holdings:
-                    st.error("Enter at least one valid holding.")
-                else:
-                    try:
-                        portfolio = create_portfolio(
-                            "manual",
-                            holdings,
-                        )
-                        st.session_state.portfolio = portfolio
-                        st.success("Portfolio created successfully.")
-                    except Exception as exc:
-                        st.error(str(exc))
-
-        # ----------------------------------------------
-        # VALUE INPUT
-        # ----------------------------------------------
-
-        else:
-
-            st.markdown(
-                """
-                <div class="card" style="margin-top:14px;">
-                    <div class="eyebrow">Value Gateway</div>
-                    <h3 style="margin:5px 0;">Current Portfolio Values</h3>
-                    <div style="color:#94a3b8;font-size:12px;">
-                        Use this mode when you already know the current rupee
-                        value allocated to each asset.
-                    </div>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-
-            rows = st.data_editor(
-                [{"Symbol": "", "Value (₹)": 0.0}],
-                num_rows="dynamic",
-                width="stretch",
-                hide_index=True,
-                column_config={
-                    "Symbol": st.column_config.TextColumn(
-                        "Asset Symbol",
-                        help="Example: TCS",
-                    ),
-                    "Value (₹)": st.column_config.NumberColumn(
-                        "Current Value (₹)",
-                        min_value=0.0,
-                        step=1000.0,
-                    ),
-                },
-                key="value_editor",
-            )
-
-            if st.button(
-                "Create Value Portfolio",
-                type="primary",
-                width="stretch",
-            ):
-                values = {}
-
-                for row in rows:
-                    symbol = str(row["Symbol"]).strip().upper()
-                    value = float(row["Value (₹)"])
-
-                    if symbol and value > 0:
-                        values[symbol] = value
-
-                if not values:
-                    st.error("Enter at least one valid portfolio value.")
-                else:
-                    try:
-                        portfolio = create_portfolio(
-                            "value",
-                            values,
-                        )
-                        st.session_state.portfolio = portfolio
-                        st.success("Value portfolio created successfully.")
-                    except Exception as exc:
-                        st.error(str(exc))
-
-    # ========================================================
-    # RIGHT COLUMN — PIPELINE STATUS
-    # ========================================================
-
-    with right:
-        st.markdown(
-            """
-            <div class="card">
-                <div class="eyebrow">Pipeline Status</div>
-                <h3 style="margin:5px 0 16px 0;">Quantitative Ingestion</h3>
-
-                <div style="display:flex;flex-direction:column;gap:12px;">
-
-                    <div style="display:flex;gap:10px;align-items:center;">
-                        <div class="step-number" style="color:#10b981;border-color:#10b981;">✓</div>
-                        <div>
-                            <b style="font-size:13px;">Portfolio Input</b><br>
-                            <span style="color:#64748b;font-size:11px;">
-                                Screenshot / manual / values
-                            </span>
-                        </div>
-                    </div>
-
-                    <div style="height:1px;background:#243047;margin-left:11px;"></div>
-
-                    <div style="display:flex;gap:10px;align-items:center;">
-                        <div class="step-number">2</div>
-                        <div>
-                            <b style="font-size:13px;">Price Resolution</b><br>
-                            <span style="color:#64748b;font-size:11px;">
-                                Latest available NSE price
-                            </span>
-                        </div>
-                    </div>
-
-                    <div style="height:1px;background:#243047;margin-left:11px;"></div>
-
-                    <div style="display:flex;gap:10px;align-items:center;">
-                        <div class="step-number">3</div>
-                        <div>
-                            <b style="font-size:13px;">Risk Engine</b><br>
-                            <span style="color:#64748b;font-size:11px;">
-                                Returns, covariance, VaR & CVaR
-                            </span>
-                        </div>
-                    </div>
-
-                    <div style="height:1px;background:#243047;margin-left:11px;"></div>
-
-                    <div style="display:flex;gap:10px;align-items:center;">
-                        <div class="step-number">4</div>
-                        <div>
-                            <b style="font-size:13px;">Forecast & Simulation</b><br>
-                            <span style="color:#64748b;font-size:11px;">
-                                Volatility → Monte Carlo → stress
-                            </span>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
-        st.markdown("<div style='height:14px'></div>", unsafe_allow_html=True)
-
-        if st.session_state.portfolio is not None:
-            portfolio = st.session_state.portfolio
-
-            st.markdown(
-                f"""
-                <div class="success-card">
-                    <div class="eyebrow" style="color:#10b981;">
-                        Portfolio Ready
-                    </div>
-                    <div style="font-size:13px;margin-top:5px;">
-                        Standardized portfolio is available to downstream
-                        quantitative modules.
-                    </div>
-                    <div class="mono" style="font-size:12px;color:#10b981;margin-top:10px;">
-                        {len(portfolio.assets)} assets · ₹{portfolio.portfolio_value:,.2f}
-                    </div>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-        else:
-            st.markdown(
-                """
-                <div class="card">
-                    <div class="eyebrow">Awaiting Input</div>
-                    <div style="font-size:13px;margin-top:5px;">
-                        Create or verify a portfolio to activate downstream
-                        risk analysis.
-                    </div>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-
-    # Portfolio summary
-    portfolio_summary(st.session_state.portfolio)
-
-    if st.session_state.portfolio is not None:
-        portfolio = st.session_state.portfolio
-
-        st.markdown("### Holdings")
-
-        holding_rows = []
-        for asset in portfolio.assets:
-            holding_rows.append(
-                {
-                    "Asset": asset,
-                    "Quantity": portfolio.holdings.get(asset, 0),
-                    "Price (₹)": portfolio.prices.get(asset, 0),
-                    "Holding Value (₹)": portfolio.holding_values.get(asset, 0),
-                    "Weight": portfolio.weights.get(asset, 0) * 100,
-                }
-            )
-
-        st.dataframe(
-            holding_rows,
-            width="stretch",
-            hide_index=True,
-            column_config={
-                "Quantity": st.column_config.NumberColumn(format="%.2f"),
-                "Price (₹)": st.column_config.NumberColumn(format="₹%.2f"),
-                "Holding Value (₹)": st.column_config.NumberColumn(format="₹%.2f"),
-                "Weight": st.column_config.NumberColumn(format="%.2f%%"),
+        return {
+            "portfolio_value": portfolio.portfolio_value,
+            "weights": portfolio.weights,
+            "annualized_volatility_static": float(annualized_vol_static),
+            "annualized_volatility_garch": float(annualized_vol_garch),
+            "historical_var_95": float(hist_var),
+            "historical_var_95_value": float(hist_var * portfolio.portfolio_value),
+            "parametric_var_95": float(param_var),
+            "parametric_var_95_value": float(param_var * portfolio.portfolio_value),
+            "historical_cvar_95": float(hist_cvar),
+            "historical_cvar_95_value": float(hist_cvar * portfolio.portfolio_value),
+            "top_contributor": {
+                "symbol": top_symbol,
+                "risk_pct": float(pct_contribution[top_symbol]),
+                "weight_pct": float(portfolio.weights[top_symbol]),
+                "drag": float(pct_contribution[top_symbol] - portfolio.weights[top_symbol]),
             },
+            "contributions": contributions,
+        }
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.post("/api/portfolio/series")
+def portfolio_series(request: Optional[HoldingsRequest] = None):
+    """
+    Time series behind the overview and risk charts: holdings value over time,
+    the benchmark rebased to the same start, daily returns, and one-day 95% VaR
+    thresholds (EWMA and 252-day historical) with the days that breached them.
+    """
+    holdings = _resolve_holdings(request)
+    if not holdings:
+        raise HTTPException(status_code=400, detail="Add holdings on the Ingestion page first.")
+
+    try:
+        holdings = validate_holdings(holdings)
+
+        missing = missing_history(list(holdings))
+        if missing:
+            raise ValueError(
+                f"No price history for {', '.join(missing)}. "
+                "Upload NSE history for these stocks on the Ingestion page first."
+            )
+
+        portfolio = create_portfolio("manual", holdings)
+        price_data = create_price_dataset(list(holdings))
+        asset_returns = calculate_asset_returns(price_data)
+        returns_df = calculate_portfolio_returns(asset_returns, portfolio.weights)
+        returns = returns_df.set_index("DATE")["PORTFOLIO RETURN"].dropna()
+
+        value = portfolio_value_series(price_data, holdings)
+        risk = risk_series(returns)
+
+        benchmark = None
+        if has_history(BENCHMARK_SYMBOL):
+            closes = load_clean_asset_data(BENCHMARK_SYMBOL).set_index("DATE")["CLOSE"]
+            benchmark = closes.reindex(value.index).ffill()
+            first_valid = benchmark.first_valid_index()
+            if first_valid is not None:
+                benchmark = rebase_to(benchmark, value.loc[first_valid])
+            else:
+                benchmark = None
+
+        latest_threshold = risk["VAR_EWMA"].dropna().iloc[-1]
+        scored = risk["VAR_EWMA"].notna()
+
+        return {
+            "dates": [d.strftime("%Y-%m-%d") for d in value.index],
+            "portfolio_value": to_json_list(value),
+            "benchmark": BENCHMARK_SYMBOL if benchmark is not None else None,
+            "benchmark_value": to_json_list(benchmark) if benchmark is not None else None,
+            "risk_dates": [d.strftime("%Y-%m-%d") for d in risk.index],
+            "daily_returns": to_json_list(risk["RETURN"]),
+            "var_ewma": to_json_list(risk["VAR_EWMA"]),
+            "var_historical": to_json_list(risk["VAR_HISTORICAL"]),
+            "breaches": to_json_list(risk["BREACH"]),
+            "scored_days": int(scored.sum()),
+            "breach_count": int(risk.loc[scored, "BREACH"].sum()),
+            "breach_rate_pct": float(risk.loc[scored, "BREACH"].mean() * 100),
+            "var_95_pct": float(-latest_threshold),
+            "var_95_value": float(-latest_threshold * portfolio.portfolio_value),
+        }
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.post("/api/my-portfolio")
+def my_portfolio(request: Optional[PeriodRequest] = None):
+    """
+    Plain-language result for the user-facing page: what the portfolio could be
+    worth over the chosen period, how likely a gain is, and how its value has
+    moved over the past year. Built from the same simulation as the admin dashboards.
+    """
+    period = request.period if request else "1m"
+    if period not in PERIOD_DAYS:
+        raise HTTPException(status_code=400, detail="Choose a period: 1 week, 1 month, 3 months, 6 months or 1 year.")
+
+    simulation = monte_carlo(request, horizon_days=PERIOD_DAYS[period])
+    history = portfolio_series(request)
+
+    value_now = simulation["portfolio_value"]
+    fan = simulation["fan"]
+    last = len(fan["days"]) - 1
+
+    def outcome(value):
+        return {"value": value, "change_pct": (value / value_now - 1) * 100}
+
+    past_values = history["portfolio_value"][-252:]
+    past_dates = history["dates"][-252:]
+
+    return {
+        "value_now": value_now,
+        "stock_count": len(_resolve_holdings(request)),
+        "period": period,
+        "horizon_days": simulation["horizon_days"],
+        "average_outcome": outcome(simulation["expected_mean"]["value"]),
+        "likely_range": {"low": fan["p25"][last], "high": fan["p75"][last]},
+        "wide_range": {"low": fan["p05"][last], "high": fan["p95"][last]},
+        "worst_case": outcome(fan["p05"][last]),
+        "best_case": outcome(fan["p95"][last]),
+        "chance_of_gain_pct": simulation["chance_of_gain_pct"],
+        "paths": fan,
+        "past": {"dates": past_dates, "values": past_values},
+    }
+
+
+@app.post("/api/forecasting/comparison")
+def forecasting_comparison(request: Optional[HoldingsRequest] = None):
+    """
+    Out-of-sample comparison of Rolling / EWMA / GARCH / LSTM volatility forecasts,
+    plus each model's latest T+1 point forecast.
+    """
+    holdings = _resolve_holdings(request)
+    if not holdings:
+        raise HTTPException(status_code=400, detail="Holdings cannot be empty.")
+
+    cache_key = _holdings_cache_key(holdings)
+    if cache_key in _FORECAST_CACHE:
+        return _FORECAST_CACHE[cache_key]
+
+    try:
+        portfolio, asset_returns, returns_df, returns_series = _build_portfolio_and_returns(holdings)
+
+        # Leakage-free split
+        lstm_data = prepare_lstm_data(
+            returns_series,
+            lookback=60,
+            horizon=21,
+            test_months=6,
+            validation_ratio=0.15,
+        )
+        test_dates = lstm_data["dates_test"]
+
+        # Baseline: Rolling + EWMA
+        baseline_frame, baseline_results = evaluate_baseline_models(
+            returns_series,
+            test_dates,
+            rolling_window=21,
+            ewma_lambda=0.94,
+            horizon=21,
         )
 
+        # Baseline: GARCH(1,1)
+        garch_result = fit_garch(returns_series)
+        garch_vol_series = (
+            garch_result.conditional_volatility / 100
+        ) * np.sqrt(252)
+        garch_vol_series.index = returns_series.dropna().index[-len(garch_vol_series):]
 
-# ============================================================
-# OTHER PAGES — SHELL FOR NEXT UI ITERATIONS
-# ============================================================
+        realized = create_forward_realized_volatility(returns_series, horizon=21)
+        aligned_dates = [d for d in test_dates if d in garch_vol_series.index and d in realized.index]
+        garch_at_test = garch_vol_series.loc[aligned_dates]
+        realized_at_test = realized.loc[aligned_dates]
 
-elif page == "Static & Dynamic Risk":
+        garch_results = {
+            "observations": len(aligned_dates),
+            "mae": float(calculate_mae(realized_at_test, garch_at_test)),
+            "rmse": float(calculate_rmse(realized_at_test, garch_at_test)),
+            "correlation": float(calculate_forecast_correlation(realized_at_test, garch_at_test)),
+        }
 
-    render_page_header(
-        "Static & Dynamic Risk",
-        "Compare historical risk with adaptive, market-condition-aware estimates.",
-    )
-    render_stepper(2)
-
-    if st.session_state.portfolio is None:
-        st.info("Create a portfolio from Portfolio & Ingestion first.")
-    else:
-        st.markdown(
-            """
-            <div class="card-accent">
-                <div class="eyebrow">Risk Engine</div>
-                <h2 style="margin:5px 0;">Static vs Dynamic Risk</h2>
-                <div style="color:#94a3b8;font-size:13px;">
-                    The quantitative modules are already implemented in the
-                    backend. This page is the next UI integration step.
-                </div>
-            </div>
-            """,
-            unsafe_allow_html=True,
+        # Deep Learning: LSTM model
+        model, history = train_lstm(
+            lstm_data["X_train"], lstm_data["y_train"],
+            lstm_data["X_validation"], lstm_data["y_validation"],
+            hidden_size=32,
+            epochs=15,
+            patience=5,
         )
 
+        model.eval()
+        with torch.no_grad():
+            test_tensor = torch.tensor(lstm_data["X_test"], dtype=torch.float32)
+            lstm_predictions = model(test_tensor).numpy()
 
-elif page == "Volatility Models":
+        lstm_metrics = calculate_lstm_metrics(lstm_predictions, lstm_data["y_test"])
 
-    render_page_header(
-        "Volatility Forecasting & Models",
-        "Compare rolling, EWMA, GARCH and deep-learning-assisted volatility forecasts.",
-    )
-    render_stepper(3)
+        lstm_results = {
+            "observations": len(lstm_data["y_test"]),
+            "mae": float(lstm_metrics["MAE"]),
+            "rmse": float(lstm_metrics["RMSE"]),
+            "correlation": float(lstm_metrics["CORR"]),
+        }
 
-    if st.session_state.portfolio is None:
-        st.info("Create a portfolio from Portfolio & Ingestion first.")
-    else:
-        st.markdown(
-            """
-            <div class="card-accent">
-                <div class="eyebrow">Forecasting Engine</div>
-                <h2 style="margin:5px 0;">Volatility Model Workspace</h2>
-                <div style="color:#94a3b8;font-size:13px;">
-                    Model comparison and forecast visualizations will be
-                    connected to the existing forecasting modules next.
-                </div>
-            </div>
-            """,
-            unsafe_allow_html=True,
+        # Latest (T+1) point forecasts
+        latest_garch_daily = float(
+            forecast_garch_volatility(garch_result, horizon=1).iloc[0]
+        )
+        latest_garch_annualized = latest_garch_daily * np.sqrt(252)
+
+        latest_features = create_volatility_features(returns_series).dropna()
+        latest_window = latest_features.iloc[-60:].to_numpy(dtype=np.float32)
+        latest_window_scaled = (latest_window - lstm_data["mean"]) / lstm_data["std"]
+
+        model.eval()
+        with torch.no_grad():
+            latest_tensor = torch.tensor(
+                latest_window_scaled[np.newaxis, :, :], dtype=torch.float32
+            )
+            latest_lstm_forecast = float(model(latest_tensor).item())
+
+        # Chart series: every model over the same dates the LSTM was scored on.
+        garch_frame = pd.DataFrame(
+            {"garch": garch_at_test.to_numpy()},
+            index=pd.to_datetime(aligned_dates),
+        )
+        lstm_frame = pd.DataFrame(
+            {"lstm": np.ravel(lstm_predictions)},
+            index=pd.to_datetime(lstm_data["dates_test"]),
+        )
+        chart_frame = (
+            baseline_frame.join(garch_frame, how="inner")
+            .join(lstm_frame, how="inner")
+            .sort_index()
         )
 
+        result = {
+            "series": {
+                "dates": [d.strftime("%Y-%m-%d") for d in chart_frame.index],
+                "realized": to_json_list(chart_frame["REALIZED"]),
+                "rolling": to_json_list(chart_frame["ROLLING"]),
+                "ewma": to_json_list(chart_frame["EWMA"]),
+                "garch": to_json_list(chart_frame["garch"]),
+                "lstm": to_json_list(chart_frame["lstm"]),
+            },
+            "rolling": baseline_results["ROLLING"],
+            "ewma": baseline_results["EWMA"],
+            "garch": garch_results,
+            "lstm": lstm_results,
+            "latest_forecast": {
+                "garch_annualized": latest_garch_annualized,
+                "lstm_annualized": latest_lstm_forecast,
+            },
+            "lstm_training": {
+                "epochs_run": len(history["train_loss"]),
+                "final_validation_loss": float(history["validation_loss"][-1]),
+            },
+        }
+        _FORECAST_CACHE[cache_key] = result
+        return result
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
 
-else:
 
-    render_page_header(
-        "Monte Carlo & Stress Testing",
-        "Explore modeled 21-day portfolio outcome distributions and deterministic stress scenarios.",
-    )
-    render_stepper(4)
+@app.post("/api/monte-carlo")
+def monte_carlo(request: Optional[HoldingsRequest] = None, horizon_days: int = 21):
+    """
+    Monte Carlo portfolio outcome distribution over `horizon_days` trading days:
+    expected mean, median, P95, 5% VaR, 95% CVaR, worst simulated path.
+    """
+    holdings = _resolve_holdings(request)
+    if not holdings:
+        raise HTTPException(status_code=400, detail="Holdings cannot be empty.")
 
-    if st.session_state.portfolio is None:
-        st.info("Create a portfolio from Portfolio & Ingestion first.")
-    else:
-        st.markdown(
-            """
-            <div class="card-accent">
-                <div class="eyebrow">Simulation Engine</div>
-                <h2 style="margin:5px 0;">21-Day Outcome Distribution</h2>
-                <div style="color:#94a3b8;font-size:13px;">
-                    Monte Carlo paths, VaR/CVaR and scenario shocks will be
-                    connected to the existing simulation modules next.
-                </div>
-            </div>
-            """,
-            unsafe_allow_html=True,
+    try:
+        portfolio, asset_returns, returns_df, returns_series = _build_portfolio_and_returns(holdings)
+        symbols = list(holdings.keys())
+
+        asset_returns_only = asset_returns.drop(columns="DATE").dropna()
+        forecast_vols = asset_returns_only.std(ddof=1) * np.sqrt(252)
+        forecast_vols = forecast_vols[symbols]
+
+        correlation_matrix = calculate_correlation_matrix(asset_returns)
+        correlation_matrix = correlation_matrix.loc[symbols, symbols]
+
+        simulated_returns = simulate_portfolio_returns(
+            forecast_volatilities=forecast_vols,
+            correlation_matrix=correlation_matrix,
+            weights=portfolio.weights,
+            simulations=10000,
+            horizon=horizon_days,
+            seed=42,
         )
+
+        cumulative = calculate_cumulative_returns(simulated_returns)
+        pv = portfolio.portfolio_value
+
+        mc_var = calculate_monte_carlo_var(cumulative, confidence_level=0.95)
+        mc_cvar = calculate_monte_carlo_cvar(cumulative, confidence_level=0.95)
+
+        mean_return = float(np.mean(cumulative))
+        median_return = float(np.median(cumulative))
+        p95_return = float(np.percentile(cumulative, 95))
+        worst_return = float(np.min(cumulative))
+
+        return {
+            "portfolio_value": pv,
+            "expected_mean": {"pct": mean_return, "value": pv * (1 + mean_return)},
+            "median": {"pct": median_return, "value": pv * (1 + median_return)},
+            "p95_bull_tail": {"pct": p95_return, "value": pv * (1 + p95_return)},
+            "var_95": {"pct": float(-mc_var), "value": pv * (1 - mc_var)},
+            "cvar_95": {"pct": float(-mc_cvar), "value": pv * (1 - mc_cvar)},
+            "worst_path": {"pct": worst_return, "value": pv * (1 + worst_return)},
+            "horizon_days": int(simulated_returns.shape[1]),
+            "chance_of_gain_pct": float(np.mean(cumulative > 0) * 100),
+            "fan": monte_carlo_fan(simulated_returns, pv),
+            "histogram": value_histogram(pv * (1 + cumulative)),
+        }
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.post("/api/scenarios")
+def scenarios(request: Optional[HoldingsRequest] = None):
+    """
+    Deterministic stress tests for historical/structural market shocks.
+    """
+    holdings = _resolve_holdings(request)
+    if not holdings:
+        raise HTTPException(status_code=400, detail="Holdings cannot be empty.")
+
+    try:
+        portfolio = create_portfolio("manual", holdings)
+        weights = portfolio.weights
+        pv = portfolio.portfolio_value
+
+        it_assets = [s for s in weights if SECTOR_MAP.get(s) == "IT"]
+        has_reliance = "RELIANCE" in weights
+
+        results = []
+
+        # 1. IT Sector Crash
+        shocks = {s: -0.20 for s in it_assets}
+        if has_reliance:
+            shocks["RELIANCE"] = -0.10
+        pct = apply_portfolio_shock(weights, shocks)
+        results.append({
+            "name": "IT Sector Crash",
+            "description": f"IT cohort -20.0%{', Reliance -10.0%' if has_reliance else ''}",
+            "pct": pct,
+            "value_change": pv * pct,
+            "severity_pct": min(100.0, abs(pct) * 450),
+        })
+
+        # 2. Broad Market Crash
+        pct = apply_broad_market_shock(weights, -0.15)
+        results.append({
+            "name": "Broad Market Crash",
+            "description": f"All {len(weights)} holding assets drop -15.0%",
+            "pct": pct,
+            "value_change": pv * pct,
+            "severity_pct": min(100.0, abs(pct) * 450),
+        })
+
+        # 3. Reliance Shock
+        shocks = {s: -0.05 for s in it_assets}
+        if has_reliance:
+            shocks["RELIANCE"] = -0.30
+        pct = apply_portfolio_shock(weights, shocks)
+        results.append({
+            "name": "Reliance Shock",
+            "description": f"Reliance -30.0%{', IT cohort -5.0%' if it_assets else ''}",
+            "pct": pct,
+            "value_change": pv * pct,
+            "severity_pct": min(100.0, abs(pct) * 450),
+        })
+
+        # 4. Moderate Downturn
+        pct = apply_broad_market_shock(weights, -0.10)
+        results.append({
+            "name": "Moderate Downturn",
+            "description": "All holdings drop uniform -10.0%",
+            "pct": pct,
+            "value_change": pv * pct,
+            "severity_pct": min(100.0, abs(pct) * 450),
+        })
+
+        return {"portfolio_value": pv, "scenarios": results}
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.get("/api/overview")
+@app.post("/api/overview")
+def get_overview(request: Optional[HoldingsRequest] = None):
+    """
+    Combined metrics for the top overview dashboard.
+
+    Beta is measured against the uploaded NIFTY50 history (BENCHMARK_SYMBOL).
+    It is null until that history has been uploaded.
+    """
+    holdings = _resolve_holdings(request)
+    if not holdings:
+        raise HTTPException(
+            status_code=400,
+            detail="Add holdings on the Ingestion page to see the overview.",
+        )
+
+    try:
+        portfolio, asset_returns, returns_df, returns_series = _build_portfolio_and_returns(holdings)
+        pv = portfolio.portfolio_value
+        annualized_vol = returns_series.std(ddof=1) * np.sqrt(252)
+        mean_annual_return = returns_series.mean() * 252
+        sharpe = (mean_annual_return / annualized_vol) if annualized_vol > 0 else 0.0
+
+        beta = None
+        if has_history(BENCHMARK_SYMBOL):
+            benchmark_returns = (
+                load_clean_asset_data(BENCHMARK_SYMBOL)
+                .set_index("DATE")["CLOSE"]
+                .pct_change()
+                .dropna()
+            )
+            beta = calculate_beta(returns_series, benchmark_returns)
+
+        rows = [
+            {
+                "symbol": sym,
+                "weight": portfolio.weights[sym],
+                "value": portfolio.holding_values[sym],
+                "quantity": portfolio.holdings[sym],
+                "price": portfolio.prices[sym],
+            }
+            for sym in portfolio.assets
+        ]
+        rows.sort(key=lambda r: r["value"], reverse=True)
+
+        return {
+            "status": "success",
+            "portfolio_value": pv,
+            "holdings_count": len(rows),
+            "holdings": rows,
+            "annualized_volatility": float(annualized_vol),
+            "sharpe_ratio": float(round(sharpe, 2)),
+            "portfolio_beta": None if beta is None else round(beta, 2),
+            "benchmark": BENCHMARK_SYMBOL if beta is not None else None,
+            "last_day_return": float(returns_series.iloc[-1]),
+            "top_holding": rows[0] if rows else None,
+        }
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.post("/api/analyze")
+def analyze_portfolio(request: HoldingsRequest):
+    """
+    Simplified plain-language summary endpoint (used by static/kinetix.html).
+    """
+    holdings = _resolve_holdings(request)
+    if not holdings:
+        raise HTTPException(status_code=400, detail="Add at least one holding to continue.")
+
+    try:
+        holdings = validate_holdings(holdings)
+        portfolio = create_portfolio("manual", holdings)
+        price_data = create_price_dataset(list(holdings))
+        asset_returns = calculate_asset_returns(price_data)
+        returns_df = calculate_portfolio_returns(asset_returns, portfolio.weights)
+        returns = returns_df["PORTFOLIO RETURN"].dropna()
+
+        rows = [
+            {
+                "symbol": symbol,
+                "quantity": portfolio.holdings[symbol],
+                "value": portfolio.holding_values[symbol],
+                "weight": portfolio.weights[symbol],
+            }
+            for symbol in portfolio.assets
+        ]
+        rows.sort(key=lambda row: row["value"], reverse=True)
+        top_positions_weight = sum(row["weight"] for row in rows[:3])
+        historical_loss_pct = max(
+            0.0,
+            float(calculate_historical_var(returns, confidence_level=0.95)),
+        )
+
+        return {
+            "portfolio_value": portfolio.portfolio_value,
+            "holdings_count": len(rows),
+            "holdings": rows,
+            "largest_holding": rows[0],
+            "top_positions_weight": float(top_positions_weight),
+            "top_positions_count": min(3, len(rows)),
+            "historical_bad_day_loss": float(historical_loss_pct * portfolio.portfolio_value),
+            "historical_bad_day_pct": historical_loss_pct,
+            "price_history_through": price_data["DATE"].max().strftime("%d %b %Y"),
+        }
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+if __name__ == "__main__":
+    uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=False)

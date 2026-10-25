@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>My Portfolio Outlook</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #0a0e17; color: #e5e7eb; font: 15px/1.5 system-ui, "Segoe UI", Roboto, sans-serif; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 32px 16px 48px; }
+  h1 { font-size: 28px; margin: 0 0 6px; }
+  h2 { font-size: 18px; margin: 0 0 14px; }
+  h3 { font-size: 15px; margin: 22px 0 10px; color: #cbd5e1; }
+  .sub { color: #94a3b8; margin: 0 0 24px; }
+  .card { background: #111827; border: 1px solid #1f2937; border-radius: 14px; padding: 22px; margin-bottom: 18px; }
+  .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: end; }
+  label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: #94a3b8; }
+  select, input { background: #0a0e17; color: #e5e7eb; border: 1px solid #334155; border-radius: 8px; padding: 9px 10px; font: inherit; min-width: 170px; }
+  button { background: #0e7490; color: #fff; border: 0; border-radius: 8px; padding: 10px 16px; font: inherit; font-weight: 600; cursor: pointer; }
+  button:hover { background: #155e75; }
+  button.quiet { background: transparent; color: #94a3b8; padding: 4px 8px; font-weight: 500; }
+  button.quiet:hover { color: #ffb4ab; background: transparent; }
+  table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+  th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid #1f2937; }
+  th { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: #94a3b8; font-weight: 600; }
+  td.num, th.num { text-align: right; }
+  td input.shares { min-width: 90px; padding: 6px 8px; text-align: right; }
+  .tag { font-size: 12px; color: #fbbf24; background: rgba(251,191,36,.1); padding: 2px 8px; border-radius: 999px; margin-left: 8px; }
+  .muted { color: #94a3b8; }
+  .note { font-size: 13px; color: #94a3b8; margin: 6px 0 0; }
+  .headline { font-size: 21px; margin: 0 0 16px; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+  .stat { border: 1px solid #1f2937; border-radius: 12px; padding: 14px 16px; background: #0d1320; }
+  .stat .label { font-size: 13px; color: #94a3b8; }
+  .stat .big { font-size: 24px; font-weight: 700; margin-top: 4px; }
+  .stat .note { margin-top: 2px; }
+  .good { color: #4edea3; }
+  .bad { color: #ffb4ab; }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: #94a3b8; margin-bottom: 8px; }
+  .swatch { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+  .error { color: #ffb4ab; font-size: 14px; margin: 10px 0 0; }
+  .disclaimer { font-size: 13px; color: #94a3b8; border-top: 1px solid #1f2937; padding-top: 14px; margin-top: 8px; }
+  .periods { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 18px; }
+  .period { background: #0a0e17; color: #94a3b8; border: 1px solid #334155; padding: 7px 14px; font-weight: 500; }
+  .period:hover { background: #0a0e17; color: #e5e7eb; border-color: #0e7490; }
+  .period[aria-pressed="true"] { background: #0e7490; color: #fff; border-color: #0e7490; }
+  svg { width: 100%; height: auto; display: block; }
+  [hidden] { display: none !important; }
+  @media (max-width: 560px) { h1 { font-size: 22px; } .headline { font-size: 18px; } }
+</style>
+</head>
+<body>
+<main class="wrap">
+
+  <h1>What could my portfolio do next month?</h1>
+  <p class="sub">Add the stocks you hold. We estimate a likely range for the next month, based on how those stocks have moved in the past.</p>
+
+  <section class="card" aria-labelledby="stocks-title">
+    <h2 id="stocks-title">1. Your stocks</h2>
+    <div class="row">
+      <label>Stock
+        <select id="stock-select"><option value="">Choose a stock…</option></select>
+      </label>
+      <label>Number of shares
+        <input id="stock-qty" type="number" min="0" step="any" placeholder="e.g. 10"/>
+      </label>
+      <button id="add-stock" type="button">Add stock</button>
+    </div>
+    <p id="add-error" class="error" hidden></p>
+    <p id="stock-help" class="note"></p>
+
+    <table>
+      <thead>
+        <tr><th>Stock</th><th class="num">Shares</th><th class="num">Price</th><th class="num">Value</th><th></th></tr>
+      </thead>
+      <tbody id="holding-rows"></tbody>
+    </table>
+    <p id="empty-note" class="note">No stocks yet. Add at least one stock to see your result.</p>
+    <p class="note">Total value today: <strong id="total-now" class="muted">—</strong></p>
+  </section>
+
+  <section class="card" id="result-card" hidden aria-labelledby="result-title">
+    <h2 id="result-title">2. Your result</h2>
+    <div class="periods" role="group" aria-label="Time period">
+      <button type="button" class="period" data-period="1w" aria-pressed="false">1 week</button>
+      <button type="button" class="period" data-period="1m" aria-pressed="true">1 month</button>
+      <button type="button" class="period" data-period="3m" aria-pressed="false">3 months</button>
+      <button type="button" class="period" data-period="6m" aria-pressed="false">6 months</button>
+      <button type="button" class="period" data-period="1y" aria-pressed="false">1 year</button>
+    </div>
+    <p id="headline" class="headline"></p>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="label">Average outcome</div>
+        <div class="big" id="avg-value">—</div>
+        <div class="note" id="avg-change"></div>
+      </div>
+      <div class="stat">
+        <div class="label">Chance of making money</div>
+        <div class="big" id="chance">—</div>
+        <div class="note">Share of possible outcomes that end above today's value</div>
+      </div>
+      <div class="stat">
+        <div class="label">Likely range (9 times in 10 the value stays within)</div>
+        <div class="big" id="wide-range">—</div>
+        <div class="note" id="wide-change"></div>
+      </div>
+      <div class="stat">
+        <div class="label">A bad outcome (1 time in 20 is worse)</div>
+        <div class="big bad" id="worst">—</div>
+        <div class="note" id="worst-change"></div>
+      </div>
+    </div>
+
+    <h3 id="paths-title">Possible paths</h3>
+    <div class="legend">
+      <span><i class="swatch" style="background:#dfe2ef"></i>Middle outcome</span>
+      <span><i class="swatch" style="background:rgba(76,215,246,.35)"></i>Likely range (middle half)</span>
+      <span><i class="swatch" style="background:rgba(76,215,246,.12)"></i>Wide range (9 in 10)</span>
+    </div>
+    <svg id="fan-chart" viewBox="0 0 800 320" role="img" aria-label="Possible value of the portfolio over the next month"></svg>
+
+    <h3>How your portfolio moved over the past year</h3>
+    <svg id="past-chart" viewBox="0 0 850 360" role="img" aria-label="Portfolio value over the past year"></svg>
+
+    <p id="result-error" class="error" hidden></p>
+    <p class="disclaimer">
+      This is an estimate from how these stocks have moved in the past. It is not a promise: real results can be better or worse,
+      and this is not investment advice.
+    </p>
+  </section>
+
+</main>
+<script src="/static/charts.js"></script>
+<script src="/static/home.js"></script>
+</body>
+</html>

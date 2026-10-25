@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"primary-fixed":"#bae6fd","on-background":"#0f172a","on-tertiary":"#ffffff","on-tertiary-fixed":"#500724","surface-variant":"#f1f5f9","on-error":"#ffffff","surface-container-highest":"#e2e8f0","on-surface":"#0f172a","surface-container-lowest":"#ffffff","surface-container-low":"#f8fafc","primary-container":"#e0f2fe","on-primary-fixed-variant":"#0284c7","tertiary":"#ec4899","secondary-container":"#d1fae5","background":"#f8fafc","on-secondary-fixed":"#022c22","secondary-fixed":"#d1fae5","surface-container-high":"#e2e8f0","on-secondary-container":"#064e3b","surface-container":"#f1f5f9","secondary":"#059669","error-container":"#fee2e2","on-secondary":"#ffffff","inverse-surface":"#1e293b","primary-fixed-dim":"#38bdf8","secondary-fixed-dim":"#6ee7b7","primary":"#0ea5e9","outline":"#94a3b8","surface-tint":"#0ea5e9","inverse-on-surface":"#f8fafc","surface-bright":"#ffffff","on-tertiary-container":"#831843","tertiary-container":"#fce7f3","on-tertiary-fixed-variant":"#9f1239","on-secondary-fixed-variant":"#065f46","on-error-container":"#991b1b","on-primary-fixed":"#082f49","on-primary":"#ffffff","error":"#dc2626","on-primary-container":"#0c4a6e","inverse-primary":"#38bdf8","on-surface-variant":"#64748b","outline-variant":"#cbd5e1","tertiary-fixed-dim":"#fbcfe8","tertiary-fixed":"#fce7f3","surface-dim":"#f1f5f9","surface":"#f8fafc"},borderRadius:{DEFAULT:"0.25rem",lg:"0.5rem",xl:"0.75rem",full:"9999px"},spacing:{"space-base":"1rem","space-xs":"0.25rem",gutter:"1rem","space-3xl":"3rem","space-md":"0.75rem","space-xl":"1.5rem","space-2xs":"0.125rem","space-2xl":"2rem","margin-mobile":"1rem","space-sm":"0.5rem","space-lg":"1.25rem",margin:"1.5rem","gutter-mobile":"0.75rem"},fontFamily:{"headline-lg":["Inter"],"headline-md":["Inter"],"stat-lg":["JetBrains Mono"],"stat-sm":["JetBrains Mono"],"stat-md":["JetBrains Mono"],"body-sm":["Inter"],"body-md":["Inter"],"label-caps":["Inter"],"display-lg-mobile":["Inter"],"display-lg":["Inter"],"headline-sm":["Inter"],"body-lg":["Inter"]},fontSize:{"headline-lg":["28px",{lineHeight:"34px",letterSpacing:"-0.02em",fontWeight:"600"}],"headline-md":["22px",{lineHeight:"28px",letterSpacing:"-0.015em",fontWeight:"600"}],"stat-lg":["24px",{lineHeight:"30px",letterSpacing:"-0.02em",fontWeight:"600"}],"stat-sm":["12px",{lineHeight:"16px",fontWeight:"500"}],"stat-md":["16px",{lineHeight:"22px",letterSpacing:"-0.01em",fontWeight:"500"}],"body-sm":["12px",{lineHeight:"16px",fontWeight:"400"}],"body-md":["14px",{lineHeight:"20px",fontWeight:"400"}],"label-caps":["11px",{lineHeight:"14px",letterSpacing:"0.06em",fontWeight:"600"}],"display-lg-mobile":["32px",{lineHeight:"38px",letterSpacing:"-0.02em",fontWeight:"700"}],"display-lg":["40px",{lineHeight:"48px",letterSpacing:"-0.025em",fontWeight:"700"}],"headline-sm":["18px",{lineHeight:"24px",letterSpacing:"-0.01em",fontWeight:"600"}],"body-lg":["16px",{lineHeight:"24px",letterSpacing:"-0.005em",fontWeight:"400"}]}}}}</script></head><body class="bg-surface-container-lowest text-on-surface antialiased"><aside class="fixed left-0 top-0 h-full w-64 bg-surface-container-lowest z-50 flex flex-col justify-between py-space-base"><div class="flex flex-col gap-space-lg"><div class="flex items-center gap-space-sm px-space-base"><img alt="Brand logo. - Primary color: #06b6d4
+- Font: inter
+- Mode: dark
+- Roundness: rounded-md
+" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1U5jLmIlQLHjJtQluPR2uZECIxOOu5Ji0CtpKXciMuycfsRqRhgx2Ha5zNEIoGRcpQwDvMcTkIf1LJq0oP6kTsekxuDRGhcAsnbCukQZjaMdrwIY-IjwDEwnhTfXl9RDP3oaIJ4aSFsOgK_IlYXS5Um7xQ48WMgvxgoHtHNuyagor8NGvS3FhWjlWTprl2ludI4ih4JaPgN6CEbMnQVrgqzERoVL3xpilSC2NY8DrrbGrLJMbHFOpe9zxw"/><div class="flex flex-col"><span class="font-headline-sm text-headline-sm text-on-surface font-semibold tracking-tight">Kinetix Risk</span><span class="font-label-caps text-label-caps text-primary tracking-wider uppercase">Quantitative Terminal</span></div></div><div class="px-space-base"><div class="bg-surface-container-low rounded-lg p-space-sm flex flex-col gap-space-2xs"><div class="flex items-center justify-between"><span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Telemetry Node</span><div class="flex items-center gap-space-2xs"><span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span><span class="font-stat-sm text-stat-sm text-secondary">NSE LIVE</span></div></div><div class="flex items-center justify-between"><span class="font-body-sm text-body-sm text-on-surface-variant">Data Stream</span><span class="font-stat-sm text-stat-sm text-on-surface">2015-Sep 2026</span></div></div></div><nav class="flex flex-col gap-space-2xs px-space-md mt-space-sm" data-active-classes="bg-surface-container-high text-primary font-medium rounded-lg">
+<a class="flex items-center px-space-md py-space-sm transition-colors rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface font-body-md text-body-md" data-path="overview" href="/overview">
+  <span class="material-symbols-outlined mr-space-md text-[20px]">analytics</span>Overview
+</a>
+<a class="flex items-center px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-body-md text-body-md" data-path="ingestion" href="/ingestion">
+  <span class="material-symbols-outlined mr-space-md text-[20px]">table_chart</span>Portfolio &amp; Ingestion
+</a>
+<a class="flex items-center px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-body-md text-body-md" data-path="risk" href="/risk">
+  <span class="material-symbols-outlined mr-space-md text-[20px]">shield_with_heart</span>Static &amp; Dynamic Risk
+</a>
+<a class="flex items-center px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-body-md text-body-md" data-path="volatility" href="/volatility">
+  <span class="material-symbols-outlined mr-space-md text-[20px]">query_stats</span>Volatility Models
+</a>
+<a class="flex items-center px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-body-md text-body-md" data-path="monte-carlo" href="/monte-carlo">
+  <span class="material-symbols-outlined mr-space-md text-[20px]">casino</span>Monte Carlo &amp; Stress
+</a>
+<a class="flex items-center px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-body-md text-body-md" data-path="kinetix" href="/kinetix">
+  <span class="material-symbols-outlined mr-space-md text-[20px]">summarize</span>Quick Summary
+</a>
+</nav></div><div class="flex flex-col gap-space-sm px-space-base"><div class="bg-surface-container-low rounded-lg p-space-sm flex flex-col gap-space-2xs"><span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Aggregate Equity (INR)</span><span class="font-stat-md text-stat-md text-primary font-semibold"><span id="nav-equity">—</span></span></div></div></aside><div class="pl-64"><header class="fixed top-0 left-64 right-0 h-16 bg-surface-container-lowest/80 backdrop-blur-xl z-40 flex items-center justify-between px-space-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex items-center gap-space-xl"><nav class="hidden xl:flex items-center gap-space-xs" data-active-classes="bg-surface-container text-primary font-medium rounded-lg"><a class="px-space-md py-space-xs text-on-surface-variant hover:text-on-surface transition-colors font-body-sm text-body-sm" data-path="portfolio-and-ingestion" href="#">Portfolio &amp; Ingestion</a><a class="px-space-md py-space-xs text-on-surface-variant hover:text-on-surface transition-colors font-body-sm text-body-sm" data-path="static-and-dynamic-risk" href="#">Static &amp; Dynamic Risk</a><a class="px-space-md py-space-xs text-on-surface-variant hover:text-on-surface transition-colors font-body-sm text-body-sm" data-path="volatility-forecasting-and-models" href="#">Volatility Forecasting &amp; Models</a><a class="px-space-md py-space-xs text-on-surface-variant hover:text-on-surface transition-colors font-body-sm text-body-sm" data-path="monte-carlo-and-stress-testing" href="#">Monte Carlo &amp; Stress Testing</a></nav></div><div class="flex items-center gap-space-md"><div class="flex items-center gap-space-xs px-space-sm py-space-2xs bg-secondary/10 rounded-full"><span class="w-2 h-2 rounded-full bg-secondary"></span><span class="font-stat-sm text-stat-sm text-secondary">MARKET OPEN</span></div><button class="flex items-center justify-center p-space-xs text-on-surface-variant hover:text-on-surface transition-colors"><span class="material-symbols-outlined text-xl">notifications</span></button><button class="flex items-center justify-center p-space-xs text-on-surface-variant hover:text-on-surface transition-colors"><span class="material-symbols-outlined text-xl">tune</span></button><img alt="Profile" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida/AEtjO1XKBW36_WjsXw10l7xpXOCTgp-sFZM9bPUB0ryGSdrwD-naY4ZvWgEPZAqhtv6nZJVQvCUl9xV4Ymb-bIy1-DXAbfGFxJWhkrw0qzY_LhYe3KL0wa1h1VDXNlG_waYWku0V3BQaO-pAGv-CkxtjeGab3yZVkflg_X48W2buUncZ-c2mNXmrOC0xQmyhjN_0oyFioCzeauViBpr8Td3HN9eZ4V2Ewa5IDUwaUghfjvyZn2cBLM2S-Rz2IQE"/></div></header><main class="w-full pt-16 bg-surface-container-lowest min-h-screen px-space-xl py-space-lg"><div class="flex flex-col w-full gap-space-xl">
+<!-- Status & Methodology Header Bar -->
+<div class="relative overflow-hidden rounded-xl bg-surface-container-low p-space-lg shadow-md">
+<div class="absolute -right-16 -top-16 w-80 h-80 rounded-full bg-primary/10 blur-3xl pointer-events-none"></div>
+<div class="relative z-10 flex flex-col xl:flex-row items-start xl:items-center justify-between gap-space-lg">
+<div class="flex flex-col gap-space-2xs">
+<div class="flex items-center gap-space-sm flex-wrap">
+<span class="inline-flex items-center gap-space-xs px-space-sm py-space-2xs rounded-full bg-primary/15 text-primary font-label-caps text-label-caps uppercase tracking-wider">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+            Stage 15 &amp; 16 Architecture
+          </span>
+<span class="font-label-caps text-label-caps text-on-surface-variant">|</span>
+<span class="font-stat-sm text-stat-sm text-secondary flex items-center gap-space-2xs">
+<span class="material-symbols-outlined text-sm">verified</span>
+            Out-of-sample Forecast Evaluation on NSE Historical Data (2015 – Sep 2026)
+          </span>
+</div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface tracking-tight mt-space-2xs">
+          Conditional Volatility Engine &amp; Deep Recurrent Manifold
+        </h2>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-3xl">
+          Constructing dynamic covariance <span class="font-stat-sm text-primary font-medium">Σ_dynamic = D_σ · R · D_σ</span> by forecasting asset variance regimes rather than directional price drift.
+        </p>
+</div>
+<!-- Active Model Toggle Strip -->
+<div class="flex flex-col gap-space-xs self-stretch xl:self-auto min-w-[280px]">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Active Telemetry Model</span>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-space-xs p-space-2xs rounded-lg bg-surface-container" id="modelToggleGroup">
+<button class="model-btn px-space-sm py-space-xs rounded-md text-on-surface-variant font-label-caps text-label-caps text-center hover:text-on-surface transition-all" data-model="rolling">Rolling (21D)</button>
+<button class="model-btn px-space-sm py-space-xs rounded-md text-on-surface-variant font-label-caps text-label-caps text-center hover:text-on-surface transition-all" data-model="ewma">EWMA (λ=0.94)</button>
+<button class="model-btn px-space-sm py-space-xs rounded-md text-on-surface-variant font-label-caps text-label-caps text-center hover:text-on-surface transition-all" data-model="garch">GARCH(1,1)</button>
+<button class="model-btn px-space-sm py-space-xs rounded-md bg-surface-bright text-primary font-label-caps text-label-caps text-center font-semibold transition-all" data-model="lstm">LSTM (Aware)</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Benchmarking Hero Strip: Quantitative Comparison Matrix -->
+<div class="flex flex-col gap-space-md">
+<div class="flex items-center justify-between px-space-2xs">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-primary text-xl">analytics</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Empirical Model Benchmark Matrix (10-Year OOS Horizon)</h3>
+</div>
+<span class="font-stat-sm text-stat-sm text-on-surface-variant">Validated over N=2,684 Trading Sessions</span>
+</div>
+<div class="overflow-x-auto rounded-xl bg-surface-container-low shadow-sm">
+<table class="w-full text-left">
+<thead>
+<tr class="bg-surface-container text-on-surface-variant font-label-caps text-label-caps uppercase tracking-wider">
+<th class="py-space-md px-space-lg">Quantitative Model</th>
+<th class="py-space-md px-space-md text-right">MAE</th>
+<th class="py-space-md px-space-md text-right">RMSE</th>
+<th class="py-space-md px-space-md text-right">Directional Corr (ρ)</th>
+<th class="py-space-md px-space-lg">Regime Adaptability &amp; Architecture</th>
+<th class="py-space-md px-space-lg text-center">OOS Status</th>
+</tr>
+</thead>
+<tbody class="divide-y-0">
+<tr class="hover:bg-surface-container/40 transition-colors">
+<td class="py-space-md px-space-lg">
+<div class="flex flex-col">
+<span class="font-body-md text-body-md font-semibold text-on-surface">Rolling Volatility (21D)</span>
+<span class="font-stat-sm text-stat-sm text-on-surface-variant">Uniform Sample Window</span>
+</div>
+</td>
+<td id="vol-rolling-mae" class="py-space-md px-space-md text-right font-stat-md text-stat-md text-on-surface">—</td>
+<td id="vol-rolling-rmse" class="py-space-md px-space-md text-right font-stat-md text-stat-md text-on-surface">—</td>
+<td id="vol-rolling-corr" class="py-space-md px-space-md text-right font-stat-md text-stat-md text-on-surface">—</td>
+<td class="py-space-md px-space-lg font-body-sm text-body-sm text-on-surface-variant">Equal weights in historical window (Severe lag on tail spikes)</td>
+<td class="py-space-md px-space-lg text-center">
+<span class="inline-block px-space-sm py-space-2xs rounded-full bg-surface-variant text-on-surface-variant font-stat-sm text-stat-sm">Baseline</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container/40 transition-colors">
+<td class="py-space-md px-space-lg">
+<div class="flex flex-col">
+<span class="font-body-md text-body-md font-semibold text-on-surface">EWMA (Decay λ=0.94)</span>
+<span class="font-stat-sm text-stat-sm text-on-surface-variant">RiskMetrics Specification</span>
+</div>
+</td>
+<td id="vol-ewma-mae" class="py-space-md px-space-md text-right font-stat-md text-stat-md text-on-surface">—</td>
+<td id="vol-ewma-rmse" class="py-space-md px-space-md text-right font-stat-md text-stat-md text-on-surface">—</td>
+<td id="vol-ewma-corr" class="py-space-md px-space-md text-right font-stat-md text-stat-md text-on-surface">—</td>
+<td class="py-space-md px-space-lg font-body-sm text-body-sm text-on-surface-variant">Faster shock response (20.72% ann. σ), zero mean-reversion drift</td>
+<td class="py-space-md px-space-lg text-center">
+<span class="inline-block px-space-sm py-space-2xs rounded-full bg-primary/10 text-primary font-stat-sm text-stat-sm">Competitive</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container/40 transition-colors">
+<td class="py-space-md px-space-lg">
+<div class="flex flex-col">
+<span class="font-body-md text-body-md font-semibold text-on-surface">GARCH(1,1) (α+β=0.852)</span>
+<span class="font-stat-sm text-stat-sm text-on-surface-variant">Bollerslev MLE Residuals</span>
+</div>
+</td>
+<td id="vol-garch-mae" class="py-space-md px-space-md text-right font-stat-md text-stat-md text-secondary">—</td>
+<td id="vol-garch-rmse" class="py-space-md px-space-md text-right font-stat-md text-stat-md text-secondary font-semibold">—</td>
+<td id="vol-garch-corr" class="py-space-md px-space-md text-right font-stat-md text-stat-md text-on-surface">—</td>
+<td class="py-space-md px-space-lg font-body-sm text-body-sm text-on-surface-variant">Volatility clustering persistence; long-run variance convergence</td>
+<td class="py-space-md px-space-lg text-center">
+<span class="inline-block px-space-sm py-space-2xs rounded-full bg-secondary/15 text-secondary font-stat-sm text-stat-sm">Benchmark</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container/40 transition-colors opacity-70">
+<td class="py-space-md px-space-lg">
+<div class="flex flex-col">
+<span class="font-body-md text-body-md font-semibold text-error">Baseline LSTM</span>
+<span class="font-stat-sm text-stat-sm text-on-surface-variant">Returns Sequence Only</span>
+</div>
+</td>
+<td class="py-space-md px-space-md text-right font-stat-md text-stat-md text-error">0.050694</td>
+<td class="py-space-md px-space-md text-right font-stat-md text-stat-md text-error">0.063624</td>
+<td class="py-space-md px-space-md text-right font-stat-md text-stat-md text-error">0.044</td>
+<td class="py-space-md px-space-lg font-body-sm text-body-sm text-error">Poor signal-to-noise ratio; returns sequence lacks variance memory</td>
+<td class="py-space-md px-space-lg text-center">
+<span class="inline-block px-space-sm py-space-2xs rounded-full bg-error/15 text-error font-stat-sm text-stat-sm">Suboptimal</span>
+</td>
+</tr>
+<tr class="bg-primary/5 hover:bg-primary/10 transition-colors">
+<td class="py-space-md px-space-lg">
+<div class="flex items-center gap-space-xs">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<div class="flex flex-col">
+<span class="font-body-md text-body-md font-semibold text-primary">Enhanced LSTM (Multi-feature)</span>
+<span class="font-stat-sm text-stat-sm text-primary-fixed-dim">Volatility-Aware Attention Block</span>
+</div>
+</div>
+</td>
+<td id="vol-lstm-mae" class="py-space-md px-space-md text-right font-stat-md text-stat-md text-primary font-bold">—</td>
+<td id="vol-lstm-rmse" class="py-space-md px-space-md text-right font-stat-md text-stat-md text-on-surface">—</td>
+<td id="vol-lstm-corr" class="py-space-md px-space-md text-right font-stat-md text-stat-md text-primary font-bold">—</td>
+<td class="py-space-md px-space-lg font-body-sm text-body-sm text-primary-fixed-dim font-medium">Returns + |R| + R² + Rolling(21D) + EWMA(0.94) Features</td>
+<td class="py-space-md px-space-lg text-center">
+<span class="inline-block px-space-sm py-space-2xs rounded-full bg-primary text-on-primary font-stat-sm text-stat-sm font-semibold">Top Performer</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Takeaway callout box -->
+<div class="flex flex-col sm:flex-row items-start sm:items-center justify-between p-space-md bg-surface-container rounded-lg gap-space-md">
+<div class="flex items-center gap-space-md">
+<span class="material-symbols-outlined text-secondary text-2xl">psychology_alt</span>
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps text-secondary uppercase tracking-wider">Quantitative Finding</span>
+<span class="font-body-md text-body-md text-on-surface font-medium">
+            Return-only LSTM is ineffective; volatility-aware LSTM outperforms, with GARCH remaining exceptionally competitive.
+          </span>
+</div>
+</div>
+<div class="flex items-center gap-space-sm self-end sm:self-auto font-stat-sm text-stat-sm text-on-surface-variant">
+<span>LSTM Spearman +10.2%</span>
+<span>•</span>
+<span>GARCH RMSE Lead: -1.3%</span>
+</div>
+</div>
+</div>
+<!-- Deep Visual Analytics: Forecast Curves & Dynamic Covariance Math -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-xl">
+<!-- Left Column: Forecast Trajectory Visualizer -->
+<div class="lg:col-span-7 flex flex-col gap-space-md">
+<div class="flex flex-col p-space-lg bg-surface-container-low rounded-xl gap-space-md shadow-md">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm">
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps text-primary uppercase">Empirical Verification</span>
+<h4 class="font-headline-sm text-headline-sm text-on-surface">Dynamic Volatility Trajectory vs Realized Out-of-Sample</h4>
+</div>
+<div class="flex items-center gap-space-md flex-wrap">
+<div class="flex items-center gap-space-xs font-stat-sm text-stat-sm text-on-surface-variant">
+<span class="w-3 h-0.5 bg-outline"></span> Realized
+            </div>
+<div class="flex items-center gap-space-xs font-stat-sm text-stat-sm text-secondary">
+<span class="w-3 h-0.5 bg-secondary"></span> GARCH(1,1)
+            </div>
+<div class="flex items-center gap-space-xs font-stat-sm text-stat-sm text-primary">
+<span class="w-3 h-0.5 bg-primary"></span> LSTM-Aware
+            </div>
+</div>
+</div>
+<!-- Inline High-Fidelity SVG Trajectory Chart -->
+<div class="relative w-full h-72 bg-surface-container rounded-lg p-space-sm overflow-hidden flex items-end">
+<svg class="w-full h-full" fill="none" preserveaspectratio="none" viewbox="0 0 700 240" id="vol-chart"></svg>
+<!-- Floating Micro Metric on Graph -->
+<div class="absolute right-space-md top-space-md bg-surface-container-high/90 backdrop-blur-md px-space-sm py-space-xs rounded-lg flex flex-col gap-space-2xs">
+<span class="font-label-caps text-label-caps text-on-surface-variant">LATEST FORECAST (T+1D)</span>
+<div class="flex items-center gap-space-sm font-stat-sm text-stat-sm">
+<span class="text-primary font-bold">LSTM: <span id="latest-lstm-forecast">—</span></span>
+<span class="text-secondary">GARCH: —</span>
+</div>
+</div>
+</div>
+<!-- Trajectory Chart Metrics Footer -->
+<div class="grid grid-cols-3 gap-space-sm pt-space-xs">
+<div class="flex flex-col p-space-sm rounded-lg bg-surface-container">
+<span class="font-label-caps text-label-caps text-on-surface-variant">Mean Shock Recovery</span>
+<span class="font-stat-md text-stat-md text-on-surface font-semibold">14.2 Sessions</span>
+<span class="font-stat-sm text-stat-sm text-secondary">LSTM fast damping</span>
+</div>
+<div class="flex flex-col p-space-sm rounded-lg bg-surface-container">
+<span class="font-label-caps text-label-caps text-on-surface-variant">Clustering Parameter (α+β)</span>
+<span class="font-stat-md text-stat-md text-on-surface font-semibold">0.852</span>
+<span class="font-stat-sm text-stat-sm text-on-surface-variant">Strong volatility memory</span>
+</div>
+<div class="flex flex-col p-space-sm rounded-lg bg-surface-container">
+<span class="font-label-caps text-label-caps text-on-surface-variant">Directional Accuracy</span>
+<span class="font-stat-md text-stat-md text-primary font-semibold">43.0% (ρ=0.430)</span>
+<span class="font-stat-sm text-stat-sm text-primary">+10.2% vs rolling</span>
+</div>
+</div>
+</div>
+<!-- Regime Detection Classification -->
+<div class="flex flex-col p-space-lg bg-surface-container-low rounded-xl gap-space-md shadow-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-secondary text-lg">tune</span>
+<h4 class="font-headline-sm text-headline-sm text-on-surface">Volatility Regime Detection &amp; Markov Tercile</h4>
+</div>
+<span class="px-space-sm py-space-2xs rounded-full bg-secondary/10 text-secondary font-stat-sm text-stat-sm font-semibold">
+            CURRENT: NORMAL REGIME (68.4%)
+          </span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-space-md">
+<!-- Low Regime -->
+<div class="p-space-md rounded-lg bg-surface-container flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps text-secondary uppercase">Low Regime</span>
+<span class="font-stat-sm text-stat-sm text-on-surface-variant">&lt; 14.0%</span>
+</div>
+<span class="font-stat-lg text-stat-lg text-secondary font-bold">18.2%</span>
+<div class="w-full bg-surface-variant h-1.5 rounded-full overflow-hidden">
+<div class="bg-secondary h-full" style="width: 18.2%"></div>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Compressing spread</span>
+</div>
+<!-- Normal Regime -->
+<div class="p-space-md rounded-lg bg-surface-container flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps text-primary uppercase">Normal Regime</span>
+<span class="font-stat-sm text-stat-sm text-on-surface-variant">14.0% – 22.0%</span>
+</div>
+<span class="font-stat-lg text-stat-lg text-primary font-bold">68.4%</span>
+<div class="w-full bg-surface-variant h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary h-full" style="width: 68.4%"></div>
+</div>
+<span class="font-body-sm text-body-sm text-primary font-medium">Equilibrium baseline</span>
+</div>
+<!-- High Regime -->
+<div class="p-space-md rounded-lg bg-surface-container flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps text-tertiary-container uppercase">High Stress</span>
+<span class="font-stat-sm text-stat-sm text-on-surface-variant">&gt; 22.0%</span>
+</div>
+<span class="font-stat-lg text-stat-lg text-tertiary-container font-bold">13.4%</span>
+<div class="w-full bg-surface-variant h-1.5 rounded-full overflow-hidden">
+<div class="bg-tertiary-container h-full" style="width: 13.4%"></div>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Tail risk threshold</span>
+</div>
+</div>
+<!-- Regime Transition Probability Matrix Snippet -->
+<div class="flex flex-col gap-space-xs p-space-sm rounded-lg bg-surface-container-high/60">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Transition Likelihood Matrix (P_ij)</span>
+<span class="font-stat-sm text-stat-sm text-on-surface-variant">Stationary Distribution Stable</span>
+</div>
+<div class="grid grid-cols-3 gap-space-sm font-stat-sm text-stat-sm text-center">
+<div class="p-space-xs rounded bg-surface-container">P(L→L): <span class="text-on-surface font-semibold">0.824</span></div>
+<div class="p-space-xs rounded bg-surface-container">P(N→N): <span class="text-primary font-semibold">0.891</span></div>
+<div class="p-space-xs rounded bg-surface-container">P(H→H): <span class="text-tertiary-container font-semibold">0.718</span></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Dynamic Covariance Matrix Inspector & Math Engine -->
+<div class="lg:col-span-5 flex flex-col gap-space-md">
+<!-- Dynamic Covariance Formulation Box -->
+<div class="flex flex-col p-space-lg bg-surface-container-low rounded-xl gap-space-md shadow-md">
+<div class="flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps text-primary uppercase">Risk Engine Pipeline</span>
+<h4 class="font-headline-sm text-headline-sm text-on-surface">Dynamic Covariance Synthesis</h4>
+</div>
+<span class="material-symbols-outlined text-primary text-2xl">hub</span>
+</div>
+<!-- Core Math Inspector Formula Box -->
+<div class="p-space-md rounded-lg bg-surface-container flex flex-col gap-space-xs">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Decomposition Formulation</span>
+<div class="font-stat-md text-stat-md text-primary font-semibold tracking-wide py-space-2xs">
+            Σ_dynamic = D_σ · R_corr · D_σ
+          </div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">
+            Where <span class="text-on-surface font-medium">D_σ = diag(σ̂₁, σ̂₂, ..., σ̂ₙ)</span> contains forward LSTM-volatility forecasts, scaling the historical or shrinkage correlation matrix <span class="text-on-surface font-medium">R_corr</span>.
+          </span>
+</div>
+<!-- Portfolio Variance Impact Card -->
+<div class="grid grid-cols-2 gap-space-md">
+<div class="p-space-md rounded-lg bg-surface-container flex flex-col gap-space-2xs">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Static Portfolio Vol</span>
+<span class="font-stat-lg text-stat-lg text-on-surface">21.36%</span>
+<span class="font-stat-sm text-stat-sm text-on-surface-variant">Historical 252D Sample</span>
+</div>
+<div class="p-space-md rounded-lg bg-primary/10 flex flex-col gap-space-2xs">
+<span class="font-label-caps text-label-caps text-primary uppercase">Dynamic Volatility (σ_p)</span>
+<span id="latest-garch-forecast" class="font-stat-lg text-stat-lg text-primary font-bold">—</span>
+<span class="font-stat-sm text-stat-sm text-secondary font-medium">-3.53% (Efficient Capital)</span>
+</div>
+</div>
+<!-- Dynamic Covariance Matrix Visual Slice (Top NSE Holdings) -->
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Active Asset Sigma &amp; Covariance Slice</span>
+<span class="font-stat-sm text-stat-sm text-on-surface-variant">Top Weights</span>
+</div>
+<div class="grid grid-cols-4 gap-space-xs text-center font-stat-sm text-stat-sm">
+<div class="p-space-sm rounded bg-surface-container text-on-surface-variant font-label-caps">TICKER</div>
+<div class="p-space-sm rounded bg-surface-container text-on-surface-variant font-label-caps">WEIGHT (w)</div>
+<div class="p-space-sm rounded bg-surface-container text-on-surface-variant font-label-caps">STATIC σ</div>
+<div class="p-space-sm rounded bg-surface-container text-primary font-label-caps">LSTM σ̂ (ANN)</div>
+<!-- RELIANCE -->
+<div class="p-space-sm rounded bg-surface-container font-medium text-on-surface text-left">RELIANCE</div>
+<div class="p-space-sm rounded bg-surface-container text-on-surface">18.4%</div>
+<div class="p-space-sm rounded bg-surface-container text-on-surface">22.10%</div>
+<div class="p-space-sm rounded bg-primary/10 text-primary font-semibold">18.94%</div>
+<!-- HDFCBANK -->
+<div class="p-space-sm rounded bg-surface-container font-medium text-on-surface text-left">HDFCBANK</div>
+<div class="p-space-sm rounded bg-surface-container text-on-surface">15.2%</div>
+<div class="p-space-sm rounded bg-surface-container text-on-surface">19.45%</div>
+<div class="p-space-sm rounded bg-primary/10 text-primary font-semibold">16.12%</div>
+<!-- INFY -->
+<div class="p-space-sm rounded bg-surface-container font-medium text-on-surface text-left">INFY</div>
+<div class="p-space-sm rounded bg-surface-container text-on-surface">12.1%</div>
+<div class="p-space-sm rounded bg-surface-container text-on-surface">24.80%</div>
+<div class="p-space-sm rounded bg-primary/10 text-primary font-semibold">21.50%</div>
+<!-- ICICIBANK -->
+<div class="p-space-sm rounded bg-surface-container font-medium text-on-surface text-left">ICICIBANK</div>
+<div class="p-space-sm rounded bg-surface-container text-on-surface">10.5%</div>
+<div class="p-space-sm rounded bg-surface-container text-on-surface">21.90%</div>
+<div class="p-space-sm rounded bg-primary/10 text-primary font-semibold">17.30%</div>
+</div>
+</div>
+<!-- Terminal Risk Formula Pill Bar -->
+<div class="p-space-md rounded-lg bg-surface-container flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-secondary text-xl">calculate</span>
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps text-on-surface-variant">PORTFOLIO RISK AGGREGATOR</span>
+<span class="font-stat-sm text-stat-sm text-on-surface">σ_p = √(wᵀ · Σ_dynamic · w)</span>
+</div>
+</div>
+<span class="px-space-sm py-space-2xs rounded-full bg-secondary/15 text-secondary font-stat-sm text-stat-sm font-semibold">
+            Σ Condition № 4.12
+          </span>
+</div>
+<!-- Action / Propagation Trigger CTA -->
+<button class="w-full h-12 rounded-xl bg-primary text-on-primary font-headline-sm text-headline-sm flex items-center justify-center gap-space-sm shadow-md hover:bg-primary-fixed-dim transition-all" id="propagateEngineBtn" onclick="window.location.href='/monte-carlo'">
+<span>Propagate Dynamic Covariance to Monte Carlo Engine</span>
+<span class="material-symbols-outlined text-xl">arrow_forward</span>
+</button>
+</div>
+<!-- Infrastructure / Model Diagnostics Card -->
+<div class="flex items-center justify-between p-space-md rounded-xl bg-surface-container-low shadow-sm">
+<div class="flex items-center gap-space-md">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">memory</span>
+</div>
+<div class="flex flex-col">
+<span class="font-body-md text-body-md text-on-surface font-semibold">Tensor Core Pipeline</span>
+<span class="font-stat-sm text-stat-sm text-on-surface-variant">PyTorch 2.4 | CuDNN Accelerated | Lag-21 Window</span>
+</div>
+</div>
+<div class="flex items-center gap-space-xs font-stat-sm text-stat-sm text-secondary">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span>Online</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<script>
+  (function() {
+    // Model Selector Active States Micro-Interaction
+    const modelButtons = document.querySelectorAll('.model-btn');
+    modelButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        modelButtons.forEach(b => {
+          b.classList.remove('bg-surface-bright', 'text-primary', 'font-semibold');
+          b.classList.add('text-on-surface-variant');
+        });
+        btn.classList.remove('text-on-surface-variant');
+        btn.classList.add('bg-surface-bright', 'text-primary', 'font-semibold');
+      });
+    });
+
+    // Simulation Trigger CTA Click feedback
+    const ctaBtn = document.getElementById('propagateEngineBtn');
+    if (ctaBtn) {
+      ctaBtn.addEventListener('click', () => {
+        const originalText = ctaBtn.innerHTML;
+        ctaBtn.innerHTML = `
+          <span class="material-symbols-outlined animate-spin text-xl">progress_activity</span>
+          <span>Injecting Dynamic Covariance (17.83%)...</span>
+        `;
+        ctaBtn.disabled = true;
+        setTimeout(() => {
+          ctaBtn.innerHTML = `
+            <span class="material-symbols-outlined text-xl">check_circle</span>
+            <span>Matrix Transmitted to Engine</span>
+          `;
+          setTimeout(() => {
+            ctaBtn.innerHTML = originalText;
+            ctaBtn.disabled = false;
+          }, 1800);
+        }, 1000);
+      });
+    }
+  })();
+</script></main></div><script src="/static/charts.js"></script><script src="/static/terminal.js"></script></body></html>

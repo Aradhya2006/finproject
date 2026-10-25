@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f7f4">
+  <title>RiskLens — Understand your portfolio</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #1d3028;
+      --muted: #64736b;
+      --line: #dfe7e1;
+      --paper: #ffffff;
+      --canvas: #f5f7f4;
+      --green: #187354;
+      --green-dark: #10583f;
+      --green-soft: #e7f3ec;
+      --amber: #875514;
+      --shadow: 0 18px 50px rgba(29, 48, 40, .07);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--canvas); color: var(--ink); }
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+    .topbar { height: 72px; background: rgba(255,255,255,.9); border-bottom: 1px solid var(--line); }
+    .topbar-inner { max-width: 1120px; height: 100%; margin: 0 auto; padding: 0 24px; display: flex; align-items: center; justify-content: space-between; }
+    .brand { display: flex; align-items: center; gap: 11px; font-size: 18px; font-weight: 750; letter-spacing: -.4px; }
+    .brand-mark { display: grid; place-items: center; width: 36px; height: 36px; color: white; background: var(--green); border-radius: 12px; }
+    .brand-mark svg { width: 21px; height: 21px; }
+    .top-note { color: var(--muted); font-size: 13px; }
+    main { max-width: 900px; margin: 0 auto; padding: 54px 24px 64px; }
+    .intro { margin: 0 auto 32px; max-width: 680px; text-align: center; }
+    .eyebrow { color: var(--green); font-size: 12px; font-weight: 750; letter-spacing: .11em; text-transform: uppercase; }
+    h1 { margin: 11px 0 12px; font-size: clamp(32px, 5vw, 47px); line-height: 1.08; letter-spacing: -1.8px; }
+    .intro p { margin: 0; color: var(--muted); font-size: 17px; line-height: 1.65; }
+    .panel { background: var(--paper); border: 1px solid var(--line); border-radius: 20px; box-shadow: var(--shadow); }
+    .entry-panel { padding: 24px; }
+    .section-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
+    .section-heading h2 { margin: 0 0 6px; font-size: 20px; letter-spacing: -.35px; }
+    .section-heading p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.5; }
+    .count-pill { flex: 0 0 auto; padding: 7px 10px; border-radius: 999px; color: var(--green-dark); background: var(--green-soft); font-size: 12px; font-weight: 700; }
+    .table-wrap { margin-top: 18px; overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th { padding: 0 10px 10px; color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+    td { padding: 9px 10px; border-top: 1px solid #edf1ed; }
+    .edit-input { width: 100%; min-width: 100px; height: 42px; padding: 0 11px; border: 1px solid var(--line); border-radius: 9px; color: var(--ink); background: white; }
+    .edit-input:focus { outline: 2px solid #a6d3bd; border-color: var(--green); }
+    .qty-input { max-width: 190px; }
+    .remove-button { padding: 8px 9px; border: 0; border-radius: 7px; color: var(--muted); background: transparent; font-size: 12px; }
+    .remove-button:hover { color: #9a3f39; background: #fff0ef; }
+    .entry-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 17px; }
+    .add-button { padding: 8px 0; border: 0; color: var(--green); background: transparent; font-size: 13px; font-weight: 700; }
+    .button { min-height: 44px; padding: 0 18px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 0; border-radius: 10px; color: white; background: var(--green); font-size: 14px; font-weight: 700; transition: background .15s, transform .15s; }
+    .button:hover { background: var(--green-dark); transform: translateY(-1px); }
+    .button:disabled { cursor: wait; opacity: .65; transform: none; }
+    .button.secondary { color: var(--ink); border: 1px solid var(--line); background: white; }
+    .button.secondary:hover { background: #f5f8f5; }
+    .entry-note { margin: 14px 1px 0; color: var(--muted); font-size: 12px; line-height: 1.55; }
+    .message { display: none; margin: 15px 0 0; padding: 12px 14px; border-radius: 10px; color: #9a3f39; background: #fff0ef; font-size: 13px; line-height: 1.5; }
+    .message.visible { display: block; }
+    .loading-note { display: none; margin: 13px 0 0; color: var(--muted); font-size: 13px; text-align: right; }
+    .loading-note.visible { display: block; }
+    .results { margin-top: 30px; }
+    .results-top { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin: 0 2px 15px; }
+    .results-top h2 { margin: 0 0 5px; font-size: 25px; letter-spacing: -.7px; }
+    .results-top p { margin: 0; color: var(--muted); font-size: 13px; }
+    .summary-grid { display: grid; grid-template-columns: 1.15fr 1fr 1.15fr; gap: 12px; }
+    .summary-card { min-height: 155px; padding: 19px; }
+    .summary-label { color: var(--muted); font-size: 12px; font-weight: 700; }
+    .summary-value { margin: 13px 0 8px; font-size: clamp(22px, 3.4vw, 30px); font-weight: 760; letter-spacing: -.8px; }
+    .summary-help { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
+    .summary-card.loss { border-color: #f0ddbd; background: #fffaf1; }
+    .summary-card.loss .summary-value { color: var(--amber); }
+    .insight-panel { margin-top: 12px; padding: 19px 21px; display: grid; grid-template-columns: 42px 1fr; gap: 13px; align-items: start; }
+    .insight-mark { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; color: var(--green); background: var(--green-soft); font-size: 20px; font-weight: 800; }
+    .insight-panel h3 { margin: 1px 0 5px; font-size: 15px; }
+    .insight-panel p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.6; }
+    .holdings-panel { margin-top: 12px; padding: 20px 21px 8px; }
+    .holdings-panel h3 { margin: 0; font-size: 16px; }
+    .holdings-panel .table-wrap { margin-top: 13px; }
+    .result-table td { padding-top: 12px; padding-bottom: 12px; font-size: 13px; }
+    .result-table th { padding-top: 0; }
+    .holding-symbol { font-weight: 750; }
+    .allocation { display: flex; align-items: center; gap: 9px; min-width: 110px; }
+    .bar-track { height: 7px; flex: 1; overflow: hidden; border-radius: 999px; background: #eaf0ec; }
+    .bar-fill { height: 100%; border-radius: inherit; background: #46a77e; }
+    .allocation-value { min-width: 42px; color: var(--muted); font-size: 12px; text-align: right; }
+    .disclaimer { margin: 15px 3px 0; color: var(--muted); font-size: 11px; line-height: 1.6; }
+    .below-note { margin-top: 18px; color: var(--muted); font-size: 12px; line-height: 1.6; text-align: center; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; clip-path: inset(50%); }
+    [hidden] { display: none !important; }
+    @media (max-width: 680px) {
+      .topbar { height: 62px; }
+      .topbar-inner { padding: 0 17px; }
+      .top-note { font-size: 11px; }
+      main { padding: 37px 15px 45px; }
+      .intro { margin-bottom: 24px; }
+      .intro p { font-size: 15px; }
+      .entry-panel { padding: 16px; }
+      .summary-grid { grid-template-columns: 1fr; }
+      .summary-card { min-height: unset; padding: 16px; }
+      .summary-value { margin: 8px 0 4px; }
+      .summary-card.loss { order: 3; }
+      .results-top { align-items: flex-start; flex-direction: column; }
+      .section-heading { flex-direction: column; }
+      .entry-actions { align-items: flex-start; flex-direction: column; }
+      .entry-actions .button { width: 100%; }
+      th, td { padding-left: 7px; padding-right: 7px; }
+    }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; } }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M4 17.5 9.1 12l3.5 3.3L20 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M15.5 7H20v4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span>RiskLens</span>
+      </div>
+      <span class="top-note">A clearer view of your investments</span>
+    </div>
+  </header>
+
+  <main>
+    <section class="intro">
+      <div class="eyebrow">Your portfolio, made clear</div>
+      <h1>Tell us what you own.</h1>
+      <p>Add your stock symbols and the number of shares you hold. We’ll turn them into a simple portfolio summary.</p>
+    </section>
+
+    <section class="panel entry-panel" aria-labelledby="entry-title">
+      <div class="section-heading">
+        <div>
+          <h2 id="entry-title">Your holdings</h2>
+          <p>Use the stock symbol shown by your broker, for example TCS or INFY.</p>
+        </div>
+        <span class="count-pill" id="holding-count">1 holding</span>
+      </div>
+      <div class="table-wrap">
+        <table aria-label="Enter your portfolio holdings">
+          <thead><tr><th scope="col">Stock symbol</th><th scope="col">Shares owned</th><th scope="col"><span class="sr-only">Remove</span></th></tr></thead>
+          <tbody id="holding-rows"></tbody>
+        </table>
+      </div>
+      <div class="entry-actions">
+        <button class="add-button" id="add-holding" type="button">＋ Add another stock</button>
+        <button class="button" id="analyze" type="button">Show my summary</button>
+      </div>
+      <p class="entry-note">We use the quantities you enter and available NSE price history to estimate the value. Your entries are used for this summary and are not saved by the dashboard.</p>
+      <p class="loading-note" id="analysis-loading" aria-live="polite">Looking up prices and preparing your summary…</p>
+      <div class="message" id="analysis-error" role="alert"></div>
+    </section>
+
+    <section class="results" id="results" hidden aria-live="polite">
+      <div class="results-top">
+        <div><h2>Your portfolio at a glance</h2><p id="results-date"></p></div>
+        <button class="button secondary" id="edit-holdings" type="button">Edit holdings</button>
+      </div>
+      <div class="summary-grid">
+        <article class="panel summary-card">
+          <div class="summary-label">Estimated portfolio value</div>
+          <div class="summary-value" id="portfolio-value">—</div>
+          <p class="summary-help">Based on the latest available closing prices in our data.</p>
+        </article>
+        <article class="panel summary-card">
+          <div class="summary-label">Stocks in your portfolio</div>
+          <div class="summary-value" id="portfolio-count">—</div>
+          <p class="summary-help">The number of different stocks you entered.</p>
+        </article>
+        <article class="panel summary-card loss">
+          <div class="summary-label">A rough estimate for a very bad day</div>
+          <div class="summary-value" id="bad-day-loss">—</div>
+          <p class="summary-help">About 1 in 20 past trading days had a bigger loss. Future losses could be larger.</p>
+        </article>
+      </div>
+      <article class="panel insight-panel">
+        <div class="insight-mark" aria-hidden="true">i</div>
+        <div><h3>One thing to notice</h3><p id="concentration-note"></p></div>
+      </article>
+      <article class="panel holdings-panel">
+        <h3>Your holdings</h3>
+        <div class="table-wrap">
+          <table class="result-table" aria-label="Portfolio holdings and allocation">
+            <thead><tr><th scope="col">Stock</th><th scope="col">Shares</th><th scope="col">Estimated value</th><th scope="col">Share of portfolio</th></tr></thead>
+            <tbody id="result-rows"></tbody>
+          </table>
+        </div>
+      </article>
+      <p class="disclaimer">Price data is available through <span id="price-date"></span> and may differ from your broker’s current prices. The bad-day estimate uses past daily price moves; it is not a prediction or a guarantee. For information only, not financial advice.</p>
+    </section>
+
+    <p class="below-note">Add as many holdings as you need. Your entries are used for the summary and are not saved by the dashboard.</p>
+  </main>
+
+  <script>
+    (function () {
+      "use strict";
+
+      // Served by the RiskLens server, so API calls go to the same origin.
+      var apiBase = "";
+      var rows = document.getElementById("holding-rows");
+
+      function showMessage(element, message) {
+        element.textContent = message;
+        element.classList.add("visible");
+      }
+      function clearMessage(element) {
+        element.textContent = "";
+        element.classList.remove("visible");
+      }
+      function money(value) {
+        return "₹" + Math.round(value).toLocaleString("en-IN");
+      }
+      function number(value) {
+        return Number(value).toLocaleString("en-IN", { maximumFractionDigits: 2 });
+      }
+      function percent(value) {
+        return (value * 100).toLocaleString("en-IN", { maximumFractionDigits: 1 }) + "%";
+      }
+      function escapeHTML(value) {
+        return String(value).replace(/[&<>"']/g, function (character) {
+          return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[character];
+        });
+      }
+      function updateCount() {
+        var count = rows.querySelectorAll("tr").length;
+        document.getElementById("holding-count").textContent = count + (count === 1 ? " holding" : " holdings");
+      }
+      function addRow(symbol, quantity) {
+        var row = document.createElement("tr");
+        row.innerHTML = '<td><input class="edit-input symbol-input" aria-label="Stock symbol" maxlength="24" placeholder="e.g. TCS" value="' + escapeHTML(symbol || "") + '"></td>' +
+          '<td><input class="edit-input qty-input quantity-input" aria-label="Shares owned" type="number" min="0.000001" step="any" placeholder="e.g. 10" value="' + escapeHTML(quantity == null ? "" : quantity) + '"></td>' +
+          '<td><button class="remove-button" type="button" aria-label="Remove holding">Remove</button></td>';
+        row.querySelector(".remove-button").addEventListener("click", function () {
+          row.remove();
+          if (!rows.querySelector("tr")) addRow("", "");
+          updateCount();
+        });
+        rows.appendChild(row);
+        updateCount();
+      }
+      function renderResults(data) {
+        document.getElementById("portfolio-value").textContent = money(data.portfolio_value);
+        document.getElementById("portfolio-count").textContent = data.holdings_count;
+        document.getElementById("bad-day-loss").textContent = money(data.historical_bad_day_loss);
+        document.getElementById("results-date").textContent = "A simple summary of the holdings you entered.";
+        document.getElementById("price-date").textContent = data.price_history_through || "the available history";
+
+        var topShare = percent(data.top_positions_weight || 0);
+        var topCount = data.top_positions_count || 0;
+        var firstSymbol = data.holdings && data.holdings[0] ? data.holdings[0].symbol : "your holding";
+        document.getElementById("concentration-note").textContent = topCount === 1
+          ? "You hold one stock, " + firstSymbol + ", which makes up all of this portfolio."
+          : "Your " + topCount + " largest holdings make up " + topShare + " of the portfolio. This shows how much its overall value depends on a small number of stocks.";
+
+        var body = document.getElementById("result-rows");
+        body.innerHTML = "";
+        (data.holdings || []).forEach(function (holding) {
+          var row = document.createElement("tr");
+          var share = Math.max(0, Math.min(100, holding.weight * 100));
+          row.innerHTML = '<td class="holding-symbol">' + escapeHTML(holding.symbol) + '</td>' +
+            '<td>' + escapeHTML(number(holding.quantity)) + '</td>' +
+            '<td>' + escapeHTML(money(holding.value)) + '</td>' +
+            '<td><div class="allocation"><div class="bar-track" aria-hidden="true"><div class="bar-fill" style="width:' + share.toFixed(2) + '%"></div></div><span class="allocation-value">' + escapeHTML(percent(holding.weight)) + '</span></div></td>';
+          body.appendChild(row);
+        });
+      }
+
+      addRow("", "");
+      document.getElementById("add-holding").addEventListener("click", function () {
+        addRow("", "");
+        rows.querySelector("tr:last-child .symbol-input").focus();
+      });
+      document.getElementById("edit-holdings").addEventListener("click", function () {
+        document.getElementById("results").hidden = true;
+        document.querySelector(".entry-panel").scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+
+      document.getElementById("analyze").addEventListener("click", async function () {
+        var holdings = {};
+        var entryRows = rows.querySelectorAll("tr");
+        for (var i = 0; i < entryRows.length; i += 1) {
+          var symbol = entryRows[i].querySelector(".symbol-input").value.trim().toUpperCase();
+          var quantity = Number(entryRows[i].querySelector(".quantity-input").value);
+          if (!symbol || !Number.isFinite(quantity) || quantity <= 0) {
+            showMessage(document.getElementById("analysis-error"), "Enter a stock symbol and a number of shares greater than zero for each row.");
+            return;
+          }
+          holdings[symbol] = (holdings[symbol] || 0) + quantity;
+        }
+        if (!Object.keys(holdings).length) {
+          showMessage(document.getElementById("analysis-error"), "Add at least one holding to continue.");
+          return;
+        }
+
+        var button = document.getElementById("analyze");
+        var loading = document.getElementById("analysis-loading");
+        button.disabled = true;
+        button.textContent = "Preparing summary…";
+        loading.classList.add("visible");
+        clearMessage(document.getElementById("analysis-error"));
+        try {
+          var response = await fetch(apiBase + "/api/analyze", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ holdings: holdings })
+          });
+          var data = await response.json();
+          if (!response.ok) throw new Error(data.detail || "We couldn't analyze these holdings. Check the stock symbols and try again.");
+          renderResults(data);
+          document.getElementById("results").hidden = false;
+          document.getElementById("results").scrollIntoView({ behavior: "smooth", block: "start" });
+        } catch (error) {
+          var message = error instanceof TypeError
+            ? "We couldn't connect to the analysis service. Please make sure RiskLens is running, then try again."
+            : error.message;
+          showMessage(document.getElementById("analysis-error"), message);
+        } finally {
+          button.disabled = false;
+          button.textContent = "Show my summary";
+          loading.classList.remove("visible");
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

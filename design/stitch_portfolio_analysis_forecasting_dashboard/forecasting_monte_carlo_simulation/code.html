@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "secondary": "#4edea3", "surface-container-highest": "#31353f", "on-primary-fixed-variant": "#004e5c", "tertiary-fixed": "#ffdadb", "on-secondary-fixed-variant": "#005236", "surface-variant": "#31353f", "surface-container-low": "#181b25", "on-tertiary-fixed-variant": "#92002a", "error-container": "#93000a", "on-secondary": "#003824", "on-tertiary": "#67001b", "surface-container": "#1c1f29", "surface-tint": "#4cd7f6", "inverse-surface": "#dfe2ef", "primary": "#4cd7f6", "tertiary-fixed-dim": "#ffb2b7", "surface-container-lowest": "#0a0e17", "on-primary": "#003640", "surface-bright": "#353943", "inverse-primary": "#00687a", "secondary-fixed": "#6ffbbe", "on-primary-container": "#00424f", "primary-fixed-dim": "#4cd7f6", "on-error": "#690005", "surface-container-high": "#262a34", "tertiary": "#ffb2b7", "outline-variant": "#3d494c", "surface": "#0f131c", "primary-fixed": "#acedff", "tertiary-container": "#ff7f8b", "on-tertiary-container": "#7d0023", "secondary-fixed-dim": "#4edea3", "on-error-container": "#ffdad6", "on-secondary-container": "#00311f", "on-surface-variant": "#bcc9cd", "on-background": "#dfe2ef", "on-surface": "#dfe2ef", "error": "#ffb4ab", "surface-dim": "#0f131c", "primary-container": "#06b6d4", "secondary-container": "#00a572", "inverse-on-surface": "#2c303a", "on-secondary-fixed": "#002113", "background": "#0f131c", "outline": "#869397", "on-primary-fixed": "#001f26", "on-tertiary-fixed": "#40000d" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "space-sm": "0.5rem", "gutter-mobile": "0.75rem", "space-md": "0.75rem", "space-3xl": "3rem", "space-xl": "1.5rem", "margin-mobile": "1rem", "space-base": "1rem", "gutter": "1rem", "space-lg": "1.25rem", "space-2xs": "0.125rem", "margin": "1.5rem", "space-2xl": "2rem", "space-xs": "0.25rem" }, "fontFamily": { "body-lg": [ "Inter" ], "display-lg": [ "Inter" ], "headline-lg": [ "Inter" ], "headline-sm": [ "Inter" ], "stat-md": [ "JetBrains Mono" ], "display-lg-mobile": [ "Inter" ], "body-sm": [ "Inter" ], "stat-sm": [ "JetBrains Mono" ], "body-md": [ "Inter" ], "label-caps": [ "Inter" ], "stat-lg": [ "JetBrains Mono" ], "headline-md": [ "Inter" ] }, "fontSize": { "body-lg": [ "16px", { "lineHeight": "24px", "letterSpacing": "-0.005em", "fontWeight": "400" } ], "display-lg": [ "40px", { "lineHeight": "48px", "letterSpacing": "-0.025em", "fontWeight": "700" } ], "headline-lg": [ "28px", { "lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "600" } ], "headline-sm": [ "18px", { "lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600" } ], "stat-md": [ "16px", { "lineHeight": "22px", "letterSpacing": "-0.01em", "fontWeight": "500" } ], "display-lg-mobile": [ "32px", { "lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "700" } ], "body-sm": [ "12px", { "lineHeight": "16px", "fontWeight": "400" } ], "stat-sm": [ "12px", { "lineHeight": "16px", "fontWeight": "500" } ], "body-md": [ "14px", { "lineHeight": "20px", "fontWeight": "400" } ], "label-caps": [ "11px", { "lineHeight": "14px", "letterSpacing": "0.06em", "fontWeight": "600" } ], "stat-lg": [ "24px", { "lineHeight": "30px", "letterSpacing": "-0.02em", "fontWeight": "600" } ], "headline-md": [ "22px", { "lineHeight": "28px", "letterSpacing": "-0.015em", "fontWeight": "600" } ] } } } };</script></head><body class="bg-background font-body-md text-on-surface antialiased"><aside class="fixed left-0 top-0 h-full w-64 bg-surface-container-lowest z-50 flex flex-col justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex flex-col"><div class="h-16 px-space-xl flex items-center gap-space-sm bg-surface-container-lowest"><img alt="Brand logo. - Primary color: #06b6d4
+- Font: inter
+- Mode: dark
+- Roundness: rounded-md
+" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1U5jLmIlQLHjJtQluPR2uZECIxOOu5Ji0CtpKXciMuycfsRqRhgx2Ha5zNEIoGRcpQwDvMcTkIf1LJq0oP6kTsekxuDRGhcAsnbCukQZjaMdrwIY-IjwDEwnhTfXl9RDP3oaIJ4aSFsOgK_IlYXS5Um7xQ48WMgvxgoHtHNuyagor8NGvS3FhWjlWTprl2ludI4ih4JaPgN6CEbMnQVrgqzERoVL3xpilSC2NY8DrrbGrLJMbHFOpe9zxw"/><div class="flex flex-col"><span class="font-headline-sm text-headline-sm tracking-tight text-on-surface font-bold leading-none">Kinetix</span><span class="font-label-caps text-label-caps uppercase text-primary tracking-wider">Quantitative</span></div></div><div class="px-space-xl py-space-md mx-space-md my-space-sm rounded-lg bg-surface-container-low"><div class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Portfolio Equity</div><div class="font-stat-md text-stat-md text-on-surface font-semibold mt-space-2xs">$284,950.40</div><div class="flex items-center gap-space-2xs mt-space-2xs"><span class="font-stat-sm text-stat-sm text-secondary font-medium">+1.21%</span><span class="font-body-sm text-body-sm text-on-surface-variant">24h Alpha</span></div></div><nav class="flex flex-col gap-space-2xs px-space-md mt-space-sm" data-active-classes="bg-surface-container-high text-primary font-medium rounded-lg"><a class="flex items-center px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-body-md text-body-md" data-path="overview" href="#"><span class="material-symbols-outlined mr-space-md text-[20px]">analytics</span>Overview</a><a class="flex items-center px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-body-md text-body-md" data-path="analytics-and-risk" href="#"><span class="material-symbols-outlined mr-space-md text-[20px]">monitoring</span>Analytics &amp; Risk</a><a class="flex items-center px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-body-md text-body-md" data-path="forecasting-and-simulation" href="#"><span class="material-symbols-outlined mr-space-md text-[20px]">batch_prediction</span>Forecasting &amp; Simulation</a><a class="flex items-center px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-body-md text-body-md" data-path="rebalancing-and-orders" href="#"><span class="material-symbols-outlined mr-space-md text-[20px]">tune</span>Rebalancing &amp; Orders</a><a class="flex items-center px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-body-md text-body-md" data-path="settings-and-api" href="#"><span class="material-symbols-outlined mr-space-md text-[20px]">terminal</span>Settings / API</a></nav></div><div class="p-space-md bg-surface-container-lowest"><div class="p-space-md rounded-lg bg-surface-container-low flex flex-col gap-space-xs"><div class="flex items-center justify-between"><span class="font-label-caps text-label-caps uppercase text-on-surface-variant">Engine Latency</span><span class="font-stat-sm text-stat-sm text-secondary font-medium">0.42 ms</span></div><div class="flex items-center gap-space-xs"><span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span><span class="font-body-sm text-body-sm text-on-surface">NY4 / LD4 Cross-Connect</span></div></div></div></aside><div class="pl-64 flex flex-col min-h-screen"><header class="fixed top-0 left-64 right-0 h-16 bg-surface-container-lowest/90 backdrop-blur-xl z-40 shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 w-full px-space-xl flex items-center justify-between"><div class="flex items-center gap-space-lg"><div class="flex items-center gap-space-xs px-space-sm py-space-2xs rounded-full bg-surface-container-high"><span class="w-2 h-2 rounded-full bg-secondary"></span><span class="font-body-sm text-body-sm text-on-surface font-medium">Engines Active</span></div><div class="flex items-center gap-space-xs px-space-sm py-space-2xs rounded-full bg-surface-container-high"><span class="w-2 h-2 rounded-full bg-primary"></span><span class="font-body-sm text-body-sm text-on-surface font-medium">Market Open</span></div><div class="hidden xl:flex items-center gap-space-xs text-on-surface-variant font-stat-sm text-stat-sm"><span class="material-symbols-outlined text-[16px]">speed</span><span>Tick rate: 4.8k ops/s</span></div></div><div class="flex items-center gap-space-md"><div class="flex items-center bg-surface-container-low rounded-lg p-space-2xs"><button class="px-space-sm py-space-2xs rounded font-stat-sm text-stat-sm bg-surface-container-high text-on-surface font-medium shadow-none transition-all" type="button">USD</button><button class="px-space-sm py-space-2xs rounded font-stat-sm text-stat-sm text-on-surface-variant hover:text-on-surface transition-colors" type="button">EUR</button></div><button class="relative p-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" type="button"><span class="material-symbols-outlined text-[22px]">notifications</span><span class="absolute top-1.5 right-1.5 w-2 h-2 bg-error rounded-full"></span></button><button class="px-space-md py-space-sm rounded-lg bg-surface-container-high hover:bg-surface-bright text-on-surface font-body-sm text-body-sm font-medium transition-colors" type="button">Deposit</button><button class="px-space-md py-space-sm rounded-lg bg-primary text-on-primary font-body-sm text-body-sm font-medium hover:bg-primary-container hover:text-on-primary-container transition-colors" type="button">Rebalance Now</button><div class="flex items-center pl-space-sm ml-space-xs"><img alt="Profile" class="w-8 h-8 rounded-full object-cover ring-1 ring-outline-variant" src="https://lh3.googleusercontent.com/aida/AEtjO1XKBW36_WjsXw10l7xpXOCTgp-sFZM9bPUB0ryGSdrwD-naY4ZvWgEPZAqhtv6nZJVQvCUl9xV4Ymb-bIy1-DXAbfGFxJWhkrw0qzY_LhYe3KL0wa1h1VDXNlG_waYWku0V3BQaO-pAGv-CkxtjeGab3yZVkflg_X48W2buUncZ-c2mNXmrOC0xQmyhjN_0oyFioCzeauViBpr8Td3HN9eZ4V2Ewa5IDUwaUghfjvyZn2cBLM2S-Rz2IQE"/></div></div></div></header><main class="w-full pt-16 bg-background flex-1"><div class="flex flex-col w-full">
+<div class="p-space-xl flex flex-col gap-space-xl">
+<!-- Top Meta Context Bar -->
+<div class="bg-surface-container-low rounded-xl p-space-lg shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-space-lg">
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center gap-space-sm">
+<span class="font-label-caps text-label-caps uppercase text-primary tracking-wider">Algorithmic Forecast Matrix</span>
+<span class="px-2 py-0.5 rounded-full bg-secondary/10 text-secondary font-stat-sm text-stat-sm">WASM v4.2 Kernel</span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface">Monte Carlo &amp; Jump Diffusion Terminal</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">10,000 synthetic trajectory iterations • 99.4% convergence • Completed in 4.2ms</p>
+</div>
+<!-- Quick Horizon Selector & Benchmark Stats -->
+<div class="flex flex-wrap items-center gap-space-md">
+<div class="flex bg-surface-container rounded-lg p-1">
+<button class="px-space-md py-1.5 rounded-md font-stat-sm text-stat-sm bg-surface-container-high text-primary shadow-sm" type="button">10-Year Horizon</button>
+<button class="px-space-md py-1.5 rounded-md font-stat-sm text-stat-sm text-on-surface-variant hover:text-on-surface" type="button">15-Year</button>
+<button class="px-space-md py-1.5 rounded-md font-stat-sm text-stat-sm text-on-surface-variant hover:text-on-surface" type="button">25-Year</button>
+</div>
+<button class="flex items-center gap-space-xs px-space-lg py-2.5 rounded-lg bg-primary text-on-primary font-body-md text-body-md font-medium hover:bg-primary-container transition-all shadow-md" id="recompute-btn" type="button">
+<span class="material-symbols-outlined text-[18px]">autorenew</span>
+<span>Iterate Paths</span>
+</button>
+</div>
+</div>
+<!-- KPI / Primary Projection Triad -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-space-md">
+<!-- P50 Expected Median (Hero Unit) -->
+<div class="md:col-span-2 bg-surface-container rounded-xl p-space-lg relative overflow-hidden shadow-md flex flex-col justify-between">
+<div class="absolute -right-12 -top-12 w-48 h-48 bg-primary/10 rounded-full blur-3xl pointer-events-none"></div>
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps uppercase text-on-surface-variant">Projected Horizon Terminal Equity (P50)</span>
+<span class="px-2.5 py-0.5 rounded-full bg-secondary/15 text-secondary font-stat-sm text-stat-sm font-semibold">+247.6% Cumulative</span>
+</div>
+<div class="my-space-md">
+<div class="font-stat-lg text-[38px] leading-tight text-primary font-bold tracking-tight" id="disp-p50-val">$894,000</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant mt-1 flex items-center gap-space-xs">
+<span>Median expectancy baseline</span>
+<span class="text-outline">•</span>
+<span class="text-on-surface">+$609,050 vs initial $284.9k</span>
+</div>
+</div>
+<div class="flex items-center gap-space-lg font-stat-sm text-stat-sm">
+<div>
+<span class="text-on-surface-variant">Real (Inflation-Adj):</span>
+<span class="text-on-surface font-semibold ml-1">$688,410</span>
+</div>
+<div>
+<span class="text-on-surface-variant">Annual Sharpe:</span>
+<span class="text-secondary font-semibold ml-1">1.64</span>
+</div>
+</div>
+</div>
+<!-- Conservative Scenario (P10) -->
+<div class="bg-surface-container-low rounded-xl p-space-lg shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps uppercase text-on-surface-variant">P10 Conservative</span>
+<span class="px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant font-stat-sm text-stat-sm">90% Safety</span>
+</div>
+<div class="my-space-sm">
+<div class="font-stat-lg text-stat-lg text-on-surface font-semibold" id="disp-p10-val">$512,000</div>
+<span class="font-stat-sm text-stat-sm text-on-surface-variant">+79.7% Alpha floor</span>
+</div>
+<div class="w-full bg-surface-container-high h-1.5 rounded-full overflow-hidden mt-space-sm">
+<div class="bg-outline h-full rounded-full" style="width: 36%"></div>
+</div>
+</div>
+<!-- Optimistic Scenario (P90) -->
+<div class="bg-surface-container-low rounded-xl p-space-lg shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps uppercase text-on-surface-variant">P90 Bull Mode</span>
+<span class="px-2 py-0.5 rounded-full bg-secondary/10 text-secondary font-stat-sm text-stat-sm">10% Upper Tail</span>
+</div>
+<div class="my-space-sm">
+<div class="font-stat-lg text-stat-lg text-secondary font-semibold" id="disp-p90-val">$1,420,000</div>
+<span class="font-stat-sm text-stat-sm text-secondary">+398.3% Max Velocity</span>
+</div>
+<div class="w-full bg-surface-container-high h-1.5 rounded-full overflow-hidden mt-space-sm">
+<div class="bg-secondary h-full rounded-full" style="width: 88%"></div>
+</div>
+</div>
+</div>
+<!-- Central Interactive Simulation & Cone Canvas -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">
+<!-- Primary Simulation Visualization (8 Cols) -->
+<div class="lg:col-span-8 bg-surface-container rounded-xl p-space-lg shadow-md flex flex-col gap-space-lg">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-md">
+<div class="flex items-center gap-space-md">
+<span class="font-headline-sm text-headline-sm text-on-surface">Trajectory Cone &amp; Distribution Density</span>
+<span class="text-xs px-2 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-stat-sm">Logarithmic Scale</span>
+</div>
+<div class="flex items-center gap-space-sm font-stat-sm text-stat-sm text-on-surface-variant">
+<div class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded-full bg-primary"></span>
+<span>P50 Path</span>
+</div>
+<div class="flex items-center gap-1.5 ml-space-sm">
+<span class="w-2.5 h-0.5 bg-secondary"></span>
+<span>Target Benchmark</span>
+</div>
+<div class="flex items-center gap-1.5 ml-space-sm">
+<span class="w-2.5 h-2.5 rounded bg-primary/20"></span>
+<span>80% Conf. Envelope</span>
+</div>
+</div>
+</div>
+<!-- SVG Vector Forecast Chart -->
+<div class="relative w-full h-80 bg-surface-container-lowest rounded-lg p-space-md overflow-hidden flex flex-col justify-end">
+<!-- Background Grid Gridlines -->
+<div class="absolute inset-0 flex flex-col justify-between p-6 opacity-20 pointer-events-none">
+<div class="w-full h-px bg-on-surface-variant"></div>
+<div class="w-full h-px bg-on-surface-variant"></div>
+<div class="w-full h-px bg-on-surface-variant"></div>
+<div class="w-full h-px bg-on-surface-variant"></div>
+<div class="w-full h-px bg-on-surface-variant"></div>
+</div>
+<!-- Vertical Time Marks -->
+<div class="absolute inset-0 flex justify-between px-10 py-6 opacity-10 pointer-events-none">
+<div class="h-full w-px bg-on-surface"></div>
+<div class="h-full w-px bg-on-surface"></div>
+<div class="h-full w-px bg-on-surface"></div>
+<div class="h-full w-px bg-on-surface"></div>
+<div class="h-full w-px bg-on-surface"></div>
+</div>
+<!-- Vector Projection Canvas -->
+<svg class="w-full h-full relative z-10" fill="none" preserveaspectratio="none" viewbox="0 0 800 280">
+<defs>
+<!-- Cone Fill Gradient -->
+<lineargradient id="coneGradient" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#4cd7f6" stop-opacity="0.25"></stop>
+<stop offset="50%" stop-color="#4cd7f6" stop-opacity="0.08"></stop>
+<stop offset="100%" stop-color="#4cd7f6" stop-opacity="0.01"></stop>
+</lineargradient>
+<lineargradient id="p50Glow" x1="0" x2="1" y1="0" y2="0">
+<stop offset="0%" stop-color="#4cd7f6"></stop>
+<stop offset="100%" stop-color="#4edea3"></stop>
+</lineargradient>
+</defs>
+<!-- Probability Confidence Cone (P10 to P90 polygon) -->
+<polygon fill="url(#coneGradient)" points="180,210 320,185 460,150 620,110 780,45 780,250 620,230 460,225 320,220 180,210"></polygon>
+<!-- Historical Baseline (Actual Past 3 Years) -->
+<path d="M 20,240 Q 70,230 110,235 T 180,210" fill="none" stroke="#869397" stroke-width="2.5"></path>
+<circle class="animate-pulse" cx="180" cy="210" fill="#4cd7f6" r="4.5"></circle>
+<!-- 1.0M Target Milestone Line -->
+<line opacity="0.8" stroke="#4edea3" stroke-dasharray="5 5" stroke-width="1.5" x1="180" x2="780" y1="105" y2="105"></line>
+<text class="font-stat-sm text-[11px] font-semibold tracking-wider" fill="#4edea3" x="710" y="96">$1,000,000 GOAL</text>
+<!-- P90 Trajectory -->
+<path d="M 180,210 C 320,185 460,150 780,45" fill="none" opacity="0.6" stroke="#4cd7f6" stroke-dasharray="4 3" stroke-width="1.5"></path>
+<!-- P10 Trajectory -->
+<path d="M 180,210 C 320,220 460,225 780,250" fill="none" opacity="0.6" stroke="#869397" stroke-dasharray="4 3" stroke-width="1.5"></path>
+<!-- P50 Core Median Trajectory Curve -->
+<path d="M 180,210 C 330,195 480,172 780,122" fill="none" id="core-path" stroke="url(#p50Glow)" stroke-width="3.5"></path>
+<!-- Intermediate Waypoints (Interactive Dots) -->
+<!-- Year 2.5 -->
+<circle cx="330" cy="195" fill="#1c1f29" r="4" stroke="#4cd7f6" stroke-width="2"></circle>
+<!-- Year 5 Milestone -->
+<circle cx="480" cy="172" fill="#4cd7f6" r="5"></circle>
+<!-- Year 10 Terminal -->
+<circle cx="780" cy="122" fill="#4edea3" r="6"></circle>
+</svg>
+<!-- Timeline Axis Labels -->
+<div class="flex justify-between pt-space-xs font-stat-sm text-stat-sm text-on-surface-variant z-10">
+<span>Historic</span>
+<span class="text-primary font-semibold">Today ($285k)</span>
+<span>+2.5 Years</span>
+<span class="text-on-surface font-medium">5Y ($482k)</span>
+<span>+7.5 Years</span>
+<span class="text-secondary font-semibold">10Y ($894k)</span>
+</div>
+</div>
+<!-- Metric Footnotes & Tail Dispersion -->
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-space-sm pt-space-xs">
+<div class="bg-surface-container-low rounded-lg p-space-sm">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Volatility (Sigma)</span>
+<div class="font-stat-md text-stat-md text-on-surface font-semibold">14.8% p.a.</div>
+</div>
+<div class="bg-surface-container-low rounded-lg p-space-sm">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Max Simulated Drawdown</span>
+<div class="font-stat-md text-stat-md text-tertiary font-semibold">-22.4%</div>
+</div>
+<div class="bg-surface-container-low rounded-lg p-space-sm">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Skewness / Kurtosis</span>
+<div class="font-stat-md text-stat-md text-on-surface font-semibold">-0.38 / 3.42</div>
+</div>
+<div class="bg-surface-container-low rounded-lg p-space-sm">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">VaR (99.0% / 1Y)</span>
+<div class="font-stat-md text-stat-md text-on-surface font-semibold">$34,200</div>
+</div>
+</div>
+</div>
+<!-- Probability Gauge & Horizon Goal Card (4 Cols) -->
+<div class="lg:col-span-4 flex flex-col gap-space-lg">
+<!-- Attainment Gauge Card -->
+<div class="bg-surface-container rounded-xl p-space-lg shadow-md flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps uppercase text-on-surface-variant">Benchmark Attainment</span>
+<span class="px-2 py-0.5 rounded-full bg-secondary/10 text-secondary font-stat-sm text-stat-sm">High Probability</span>
+</div>
+<!-- Circular Metric Dial -->
+<div class="flex flex-col items-center justify-center my-space-sm">
+<div class="relative w-44 h-44 flex items-center justify-center">
+<svg class="w-full h-full transform -rotate-90" viewbox="0 0 120 120">
+<circle cx="60" cy="60" fill="transparent" r="50" stroke="#262a34" stroke-width="10"></circle>
+<circle cx="60" cy="60" fill="transparent" id="gauge-circle" r="50" stroke="#00a572" stroke-dasharray="314.15" stroke-dashoffset="39.5" stroke-linecap="round" stroke-width="10"></circle>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+<span class="font-stat-lg text-[32px] leading-none text-on-surface font-bold tracking-tight" id="attainment-pct">87.4%</span>
+<span class="font-label-caps text-label-caps uppercase text-on-surface-variant mt-1.5">$1.0M Target</span>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-low rounded-lg p-space-md flex flex-col gap-space-xs">
+<div class="flex items-center justify-between font-body-sm text-body-sm">
+<span class="text-on-surface-variant">Target Date:</span>
+<span class="font-stat-sm text-stat-sm text-on-surface font-medium">Q3 2035 (10.0 Yrs)</span>
+</div>
+<div class="flex items-center justify-between font-body-sm text-body-sm">
+<span class="text-on-surface-variant">Required Additional CAGR:</span>
+<span class="font-stat-sm text-stat-sm text-secondary font-medium">+1.14% / yr</span>
+</div>
+<div class="flex items-center justify-between font-body-sm text-body-sm">
+<span class="text-on-surface-variant">Capital Preservation Score:</span>
+<span class="font-stat-sm text-stat-sm text-primary font-medium">9.4 / 10.0</span>
+</div>
+</div>
+</div>
+<!-- Jump Diffusion Dispersion Profile -->
+<div class="bg-surface-container rounded-xl p-space-lg shadow-md flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps uppercase text-on-surface-variant">Jump Frequency (λ)</span>
+<span class="font-stat-sm text-stat-sm text-primary font-semibold">0.18 / yr</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Simulates Poisson distribution discontinuous macro asset shifts with heavy tails.</p>
+<div class="flex items-center gap-space-xs pt-space-xs">
+<span class="px-2 py-1 bg-surface-container-high rounded text-on-surface font-stat-sm text-stat-sm">Merton Jump</span>
+<span class="px-2 py-1 bg-surface-container-high rounded text-on-surface font-stat-sm text-stat-sm">Brownian Drift</span>
+<span class="px-2 py-1 bg-surface-container-high rounded text-on-surface font-stat-sm text-stat-sm">GARCH(1,1)</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Parameter Tuning Matrix & Stress Testing Suite -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg">
+<!-- Interactive Sliders (7 Cols) -->
+<div class="lg:col-span-7 bg-surface-container rounded-xl p-space-lg shadow-md flex flex-col gap-space-lg">
+<div class="flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface">Dynamic Input Parameters</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Adjust macro assumptions to re-weight synthetic stochastic pathways</span>
+</div>
+<button class="text-primary hover:text-on-surface font-stat-sm text-stat-sm flex items-center gap-1 transition-colors" id="reset-params" type="button">
+<span class="material-symbols-outlined text-[16px]">refresh</span>
+<span>Reset Defaults</span>
+</button>
+</div>
+<div class="flex flex-col gap-space-lg">
+<!-- Investment Horizon Slider -->
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<label class="font-body-md text-body-md text-on-surface font-medium" for="slider-horizon">Investment Horizon</label>
+<span class="font-stat-md text-stat-md text-primary font-semibold" id="val-horizon">10 Years</span>
+</div>
+<input class="w-full h-2 bg-surface-container-high rounded-lg appearance-none cursor-pointer accent-primary" id="slider-horizon" max="30" min="1" type="range" value="10"/>
+<div class="flex justify-between font-stat-sm text-stat-sm text-on-surface-variant">
+<span>1 Year</span>
+<span>15 Years</span>
+<span>30 Years</span>
+</div>
+</div>
+<!-- Monthly Contribution Slider -->
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<label class="font-body-md text-body-md text-on-surface font-medium" for="slider-contribution">Recurring Monthly Allocation</label>
+<span class="font-stat-md text-stat-md text-secondary font-semibold" id="val-contribution">$1,500 / mo</span>
+</div>
+<input class="w-full h-2 bg-surface-container-high rounded-lg appearance-none cursor-pointer accent-secondary" id="slider-contribution" max="10000" min="0" step="100" type="range" value="1500"/>
+<div class="flex justify-between font-stat-sm text-stat-sm text-on-surface-variant">
+<span>$0 (Lump Sum Only)</span>
+<span>$5,000 / mo</span>
+<span>$10,000 / mo</span>
+</div>
+</div>
+<!-- Expected Return CAGR Slider -->
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<label class="font-body-md text-body-md text-on-surface font-medium" for="slider-cagr">Expected Mean Asset Return (CAGR)</label>
+<span class="font-stat-md text-stat-md text-primary font-semibold" id="val-cagr">8.5% p.a.</span>
+</div>
+<input class="w-full h-2 bg-surface-container-high rounded-lg appearance-none cursor-pointer accent-primary" id="slider-cagr" max="180" min="20" step="5" type="range" value="85"/>
+<div class="flex justify-between font-stat-sm text-stat-sm text-on-surface-variant">
+<span>2.0% (Risk-free Proxy)</span>
+<span>10.0% (Market Equity Beta)</span>
+<span>18.0% (Aggressive Alpha)</span>
+</div>
+</div>
+<!-- Toggle Sliders Row -->
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-space-md pt-space-xs">
+<div class="bg-surface-container-low rounded-lg p-space-md flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-body-md text-body-md text-on-surface font-medium">Inflation Drag (CPI)</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Fixed 2.4% annual deflation factor</span>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-high peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-on-surface after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+<div class="bg-surface-container-low rounded-lg p-space-md flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-body-md text-body-md text-on-surface font-medium">Rebalancing Friction &amp; Tax</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Long-term capital gains 15% rate</span>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-high peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-on-surface after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+</div>
+</div>
+</div>
+<!-- Macro Scenario Stress-Testing Matrix (5 Cols) -->
+<div class="lg:col-span-5 bg-surface-container rounded-xl p-space-lg shadow-md flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface">Historical Stress Scenarios</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Inject deterministic market shocks</span>
+</div>
+<span class="material-symbols-outlined text-outline">tune</span>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-space-sm pt-space-xs">
+<!-- 2008 Liquidity Shock -->
+<button class="scenario-card text-left bg-surface-container-low hover:bg-surface-container-high p-space-md rounded-lg flex flex-col justify-between gap-space-sm transition-all focus:ring-1 focus:ring-error group" type="button">
+<div class="flex items-center justify-between">
+<span class="font-stat-sm text-stat-sm font-semibold text-on-surface">2008 Liquidity Crunch</span>
+<span class="px-1.5 py-0.5 rounded bg-error/15 text-error font-stat-sm text-stat-sm">-32%</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Subprime cascade, bank runs, liquidity freeze &amp; 300 bps credit spread blowouts.</p>
+<span class="font-label-caps text-label-caps uppercase text-error tracking-wider">High Systemic Drag</span>
+</button>
+<!-- Stagflation & Tight Money -->
+<button class="scenario-card text-left bg-surface-container-low hover:bg-surface-container-high p-space-md rounded-lg flex flex-col justify-between gap-space-sm transition-all focus:ring-1 focus:ring-tertiary group" type="button">
+<div class="flex items-center justify-between">
+<span class="font-stat-sm text-stat-sm font-semibold text-on-surface">Stagflation Trap</span>
+<span class="px-1.5 py-0.5 rounded bg-tertiary/15 text-tertiary font-stat-sm text-stat-sm">-12%</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Sticky 6%+ CPI print with fed policy rates held restrictive above terminal.</p>
+<span class="font-label-caps text-label-caps uppercase text-tertiary tracking-wider">Margin Compression</span>
+</button>
+<!-- Tech AI Supercycle -->
+<button class="scenario-card text-left bg-surface-container-low hover:bg-surface-container-high p-space-md rounded-lg flex flex-col justify-between gap-space-sm transition-all focus:ring-1 focus:ring-secondary group" type="button">
+<div class="flex items-center justify-between">
+<span class="font-stat-sm text-stat-sm font-semibold text-on-surface">Tech AI Supercycle</span>
+<span class="px-1.5 py-0.5 rounded bg-secondary/15 text-secondary font-stat-sm text-stat-sm">+45%</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Autonomous agent deployment accelerating global enterprise operating margin expansion.</p>
+<span class="font-label-caps text-label-caps uppercase text-secondary tracking-wider">Productivity Expansion</span>
+</button>
+<!-- Geopolitical Deglobalization -->
+<button class="scenario-card text-left bg-surface-container-low hover:bg-surface-container-high p-space-md rounded-lg flex flex-col justify-between gap-space-sm transition-all focus:ring-1 focus:ring-outline group" type="button">
+<div class="flex items-center justify-between">
+<span class="font-stat-sm text-stat-sm font-semibold text-on-surface">Deglobalization</span>
+<span class="px-1.5 py-0.5 rounded bg-surface-container-highest text-on-surface-variant font-stat-sm text-stat-sm">-18%</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Protectionist tariffs, bilateral trade embargoes and supply chain re-shoring costs.</p>
+<span class="font-label-caps text-label-caps uppercase text-on-surface-variant tracking-wider">Supply Fragmentation</span>
+</button>
+</div>
+<div class="mt-space-xs bg-surface-container-lowest p-space-md rounded-lg flex items-center justify-between text-on-surface-variant font-stat-sm text-stat-sm">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[18px] text-primary">verified</span>
+<span>Deterministic Seed: #940182-KX</span>
+</div>
+<span class="hover:text-primary cursor-pointer">Audit Ledger</span>
+</div>
+</div>
+</div>
+<!-- Final Execution Action Dock -->
+<div class="bg-surface-container-low rounded-xl p-space-lg shadow-sm flex flex-col sm:flex-row items-center justify-between gap-space-md">
+<div class="flex items-center gap-space-md">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">save</span>
+</div>
+<div class="flex flex-col">
+<span class="font-body-md text-body-md font-semibold text-on-surface">Commit Model State to Strategy Book</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Synchronizes automated execution triggers with Kinetix algorithmic OMS</span>
+</div>
+</div>
+<div class="flex flex-wrap items-center gap-space-sm w-full sm:w-auto">
+<button class="flex-1 sm:flex-none px-space-lg py-2.5 rounded-lg bg-surface-container-high hover:bg-surface-bright text-on-surface font-body-sm text-body-sm font-medium transition-colors" type="button">
+          Export Matrix (CSV/JSON)
+        </button>
+<button class="flex-1 sm:flex-none px-space-lg py-2.5 rounded-lg bg-surface-container-high hover:bg-surface-bright text-on-surface font-body-sm text-body-sm font-medium transition-colors" type="button">
+          Save Preset
+        </button>
+<button class="flex-1 sm:flex-none px-space-xl py-2.5 rounded-lg bg-primary hover:bg-primary-container text-on-primary font-body-sm text-body-sm font-semibold transition-all shadow-md flex items-center justify-center gap-space-xs" id="run-full-sim" type="button">
+<span class="material-symbols-outlined text-[18px]">play_arrow</span>
+<span>Run Custom Scenario Simulation</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<script>
+  (function() {
+    const horizonSlider = document.getElementById('slider-horizon');
+    const contributionSlider = document.getElementById('slider-contribution');
+    const cagrSlider = document.getElementById('slider-cagr');
+
+    const valHorizon = document.getElementById('val-horizon');
+    const valContribution = document.getElementById('val-contribution');
+    const valCagr = document.getElementById('val-cagr');
+
+    const dispP50 = document.getElementById('disp-p50-val');
+    const dispP10 = document.getElementById('disp-p10-val');
+    const dispP90 = document.getElementById('disp-p90-val');
+    const attainmentText = document.getElementById('attainment-pct');
+    const gaugeCircle = document.getElementById('gauge-circle');
+
+    const initialEquity = 284950;
+
+    function formatCurrency(val) {
+      return '$' + Math.round(val).toLocaleString('en-US');
+    }
+
+    function recalculate() {
+      const years = parseInt(horizonSlider.value, 10);
+      const monthly = parseInt(contributionSlider.value, 10);
+      const rate = parseFloat(cagrSlider.value) / 1000; // e.g. 85 -> 0.085
+
+      valHorizon.textContent = years + (years === 1 ? ' Year' : ' Years');
+      valContribution.textContent = '$' + monthly.toLocaleString('en-US') + ' / mo';
+      valCagr.textContent = (rate * 100).toFixed(1) + '% p.a.';
+
+      // Future value computation
+      const months = years * 12;
+      const monthlyRate = rate / 12;
+      
+      let fvPrincipal = initialEquity * Math.pow(1 + monthlyRate, months);
+      let fvContributions = monthly * ((Math.pow(1 + monthlyRate, months) - 1) / monthlyRate);
+      if (monthlyRate === 0) fvContributions = monthly * months;
+
+      const p50 = fvPrincipal + fvContributions;
+      const p10 = p50 * 0.572;
+      const p90 = p50 * 1.588;
+
+      dispP50.textContent = formatCurrency(p50);
+      dispP10.textContent = formatCurrency(p10);
+      dispP90.textContent = formatCurrency(p90);
+
+      // Likelihood of attaining 1,000,000 Target
+      const target = 1000000;
+      let ratio = (p50 / target);
+      let likelihood = Math.min(99.8, Math.max(5.0, (ratio * 82)));
+      attainmentText.textContent = likelihood.toFixed(1) + '%';
+
+      // Update SVG gauge dial (314.15 circumference)
+      const circumference = 314.15;
+      const offset = circumference - (circumference * (likelihood / 100));
+      gaugeCircle.style.strokeDashoffset = offset;
+    }
+
+    if (horizonSlider && contributionSlider && cagrSlider) {
+      horizonSlider.addEventListener('input', recalculate);
+      contributionSlider.addEventListener('input', recalculate);
+      cagrSlider.addEventListener('input', recalculate);
+    }
+
+    const resetBtn = document.getElementById('reset-params');
+    if (resetBtn) {
+      resetBtn.addEventListener('click', function() {
+        horizonSlider.value = 10;
+        contributionSlider.value = 1500;
+        cagrSlider.value = 85;
+        recalculate();
+      });
+    }
+
+    const recomputeBtn = document.getElementById('recompute-btn');
+    if (recomputeBtn) {
+      recomputeBtn.addEventListener('click', function() {
+        recomputeBtn.classList.add('opacity-75');
+        setTimeout(() => {
+          recalculate();
+          recomputeBtn.classList.remove('opacity-75');
+        }, 150);
+      });
+    }
+
+    // Stress test cards quick toggle
+    const scenarioCards = document.querySelectorAll('.scenario-card');
+    scenarioCards.forEach(card => {
+      card.addEventListener('click', function() {
+        scenarioCards.forEach(c => c.classList.remove('bg-surface-container-high', 'ring-1', 'ring-primary'));
+        this.classList.add('bg-surface-container-high', 'ring-1', 'ring-primary');
+      });
+    });
+  })();
+</script></main></div></body></html>

@@ -21,9 +21,9 @@ def create_lstm_sequences(
             "sequence_length must be positive."
         )
 
-    if forecast_horizon <= 0:
+    if forecast_horizon <= 1:
         raise ValueError(
-            "forecast_horizon must be positive."
+            "forecast_horizon must be greater than 1."
         )
 
     data = returns.dropna()

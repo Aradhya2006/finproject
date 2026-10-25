@@ -1,15 +1,24 @@
 import re
 
-import re
-
 import pandas as pd
 import pytesseract
 from PIL import Image
+
+# Importing ocr_engine configures the Tesseract executable path.
+from src.input import ocr_engine  # noqa: F401
 from src.data.current_prices import get_latest_prices
 from src.input.manual import calculate_portfolio_from_holdings
-from src.input.ocr_engine import extract_text_from_image
 from src.input.verification import verify_holdings
-from src.input.portfolio_input import PortfolioInput
+
+
+MIN_WORD_CONFIDENCE = 40      # Tesseract confidence (0-100) below which words are ignored
+ROW_TOLERANCE_PX = 12         # vertical distance that still counts as the same table row
+SYMBOL_COLUMN_MAX_X = 0.20    # ticker is expected in the left 20% of the image
+QUANTITY_MIN_X = 0.30         # quantity is expected between 30% and 45% of the width
+QUANTITY_MAX_X = 0.45
+
+# Table headers that look like tickers but are not.
+NON_SYMBOL_WORDS = {"SYMBOL", "COMPANY", "NAME", "HOLDINGS", "MY", "PORTFOLIO"}
 
 
 def normalize_symbol(symbol):
@@ -83,17 +92,8 @@ def extract_holdings_from_text(text):
     return holdings
 
 
-def extract_holdings_from_image(image_path):
-    """
-    Extract holdings from a portfolio screenshot.
-
-    Uses positional OCR for structured brokerage screenshots,
-    then falls back to plain-text OCR for simple layouts.
-    """
-
-    image_path = str(image_path)
-
-    image = Image.open(image_path)
+def _read_words(image):
+    """Run Tesseract and return one row per recognized, non-empty word."""
 
     data = pytesseract.image_to_data(
         image,
@@ -109,140 +109,157 @@ def extract_holdings_from_image(image_path):
         .str.strip()
     )
 
-    data = data[data["text"] != ""]
+    data = data[data["text"] != ""].copy()
 
     if data.empty:
         raise ValueError(
             "No OCR text could be extracted from image."
         )
 
-    # Keep reasonably confident OCR results.
-    data = data[data["conf"] >= 40]
+    data["conf"] = pd.to_numeric(data["conf"], errors="coerce").fillna(-1)
 
-    if data.empty:
+    return data
+
+
+def _group_rows(words):
+    """Group words into table rows by their vertical position."""
+
+    rows = []
+
+    for _, word in words.sort_values(["top", "left"]).iterrows():
+
+        for current_row in rows:
+            if abs(word["top"] - current_row[0]["top"]) <= ROW_TOLERANCE_PX:
+                current_row.append(word)
+                break
+        else:
+            rows.append([word])
+
+    return rows
+
+
+def _find_symbol_word(row_words, image_width):
+    """Return the leftmost ticker-like word in the symbol column, if any."""
+
+    for word in row_words:
+
+        text = word["text"]
+
+        if word["left"] > image_width * SYMBOL_COLUMN_MAX_X:
+            continue
+
+        if not re.fullmatch(r"[A-Za-z][A-Za-z0-9&.-]{1,14}", text):
+            continue
+
+        if text.upper() in NON_SYMBOL_WORDS:
+            continue
+
+        return word
+
+    return None
+
+
+def _find_quantity_word(row_words, image_width, symbol_left):
+    """
+    Return the quantity word for a row.
+
+    Looks in the usual quantity column first. If the layout differs, falls
+    back to the first whole number to the right of the ticker.
+    """
+
+    def is_number(word):
+        return re.fullmatch(r"\d+(?:\.\d+)?", word["text"]) is not None
+
+    for word in row_words:
+        in_column = image_width * QUANTITY_MIN_X <= word["left"] <= image_width * QUANTITY_MAX_X
+        if in_column and is_number(word):
+            return word
+
+    for word in row_words:
+        if word["left"] > symbol_left and re.fullmatch(r"\d+", word["text"]):
+            return word
+
+    return None
+
+
+def extract_holdings_detailed(image_path):
+    """
+    Extract holdings from a portfolio screenshot, with confidence.
+
+    Returns a dict:
+        holdings   - {symbol: quantity}
+        confidence - mean Tesseract confidence of the words used, 0-1
+        raw_text   - recognized text, one table row per line
+
+    Uses positional OCR for structured brokerage screenshots, then falls
+    back to plain-text OCR for simple layouts.
+    """
+
+    image = Image.open(str(image_path))
+
+    words = _read_words(image)
+    confident = words[words["conf"] >= MIN_WORD_CONFIDENCE]
+
+    if confident.empty:
         raise ValueError(
             "OCR confidence was too low to extract holdings."
         )
 
     image_width = image.width
 
-    # -----------------------------------------------------
-    # Group OCR words into rows.
-    # -----------------------------------------------------
-
-    rows = []
-
-    for _, word in data.sort_values(
-        ["top", "left"]
-    ).iterrows():
-
-        placed = False
-
-        for current_row in rows:
-
-            reference_top = current_row[0]["top"]
-
-            if abs(
-                word["top"] - reference_top
-            ) <= 12:
-
-                current_row.append(word)
-                placed = True
-                break
-
-        if not placed:
-            rows.append([word])
-
     holdings = {}
+    used_confidences = []
+    row_texts = []
 
-    # -----------------------------------------------------
-    # Parse structured brokerage table.
-    # -----------------------------------------------------
+    for row_words in _group_rows(confident):
 
-    for row_words in rows:
+        row_words = sorted(row_words, key=lambda item: item["left"])
+        row_texts.append(" ".join(word["text"] for word in row_words))
 
-        row_words = sorted(
-            row_words,
-            key=lambda item: item["left"],
-        )
+        symbol_word = _find_symbol_word(row_words, image_width)
 
-        symbol = None
-
-        # Find ticker in leftmost column.
-        for word in row_words:
-
-            text = word["text"].strip()
-
-            x_position = word["left"]
-
-            if x_position > image_width * 0.20:
-                continue
-
-            if not re.fullmatch(
-                r"[A-Za-z][A-Za-z0-9&.-]{1,14}",
-                text,
-            ):
-                continue
-
-            if text.upper() in {
-                "SYMBOL",
-                "COMPANY",
-                "NAME",
-                "HOLDINGS",
-                "MY",
-                "PORTFOLIO",
-            }:
-                continue
-
-            symbol = normalize_symbol(text)
-            break
-
-        if symbol is None:
+        if symbol_word is None:
             continue
 
-        # Find quantity.
-        for word in row_words:
+        quantity_word = _find_quantity_word(row_words, image_width, symbol_word["left"])
 
-            text = word["text"].strip()
+        if quantity_word is None:
+            continue
 
-            x_position = word["left"]
+        quantity = float(quantity_word["text"])
 
-            if not (
-                image_width * 0.30
-                <= x_position
-                <= image_width * 0.45
-            ):
-                continue
+        if quantity <= 0:
+            continue
 
-            if not re.fullmatch(
-                r"\d+(?:\.\d+)?",
-                text,
-            ):
-                continue
+        holdings[normalize_symbol(symbol_word["text"])] = quantity
+        used_confidences.extend([symbol_word["conf"], quantity_word["conf"]])
 
-            quantity = float(text)
+    if holdings:
+        confidence = sum(used_confidences) / len(used_confidences) / 100
+        return {
+            "holdings": holdings,
+            "confidence": round(confidence, 4),
+            "raw_text": "\n".join(row_texts),
+        }
 
-            if quantity > 0:
-                holdings[symbol] = quantity
+    # Simple screenshot layout: parse free text instead.
+    text = pytesseract.image_to_string(image, config="--psm 6")
+    holdings = extract_holdings_from_text(text)
+    confidence = confident["conf"].mean() / 100
 
-            break
-
-    # -----------------------------------------------------
-    # Fallback for simple screenshots.
-    # -----------------------------------------------------
-
-    if not holdings:
-
-        text = pytesseract.image_to_string(
-            image,
-            config="--psm 6",
-        )
-
-        return extract_holdings_from_text(text)
-
-    return holdings
+    return {
+        "holdings": holdings,
+        "confidence": round(float(confidence), 4),
+        "raw_text": text.strip(),
+    }
 
 
+def extract_holdings_from_image(image_path):
+    """
+    Extract holdings from a portfolio screenshot. Returns {symbol: quantity}.
+    """
+
+    return extract_holdings_detailed(image_path)["holdings"]
 
 
 def create_current_ocr_portfolio(
@@ -265,13 +282,16 @@ def create_current_ocr_portfolio(
         confirmed_holdings,
     )
 
-    prices = get_latest_prices(
+    raw_prices = get_latest_prices(
         list(verified_holdings.keys())
     )
 
+    # Strip _sources metadata before passing to portfolio calculation
+    raw_prices.pop("_sources", None)
+
     portfolio = calculate_portfolio_from_holdings(
         verified_holdings,
-        prices,
+        raw_prices,
     )
 
     portfolio.detected_holdings = detected_holdings

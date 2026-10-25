@@ -4,7 +4,7 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader, TensorDataset
 
-from src.forecasting.lstm_model import VolatilityLSTM
+from src.forecasting.lstm_model import LSTMVolatilityModel
 
 
 def set_seed(seed=42):
@@ -53,7 +53,7 @@ def train_lstm(
 
     device = torch.device("cpu")
 
-    model = VolatilityLSTM(
+    model = LSTMVolatilityModel(
         input_size=X_train.shape[2],
         hidden_size=hidden_size,
     ).to(device)

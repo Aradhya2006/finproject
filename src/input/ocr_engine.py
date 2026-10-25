@@ -1,7 +1,13 @@
 from pathlib import Path
-
+import shutil
 import pytesseract
 from PIL import Image
+
+# Auto-configure tesseract path for Windows environments if not in system PATH
+if not shutil.which("tesseract"):
+    _default_win_tesseract = Path(r"C:\Program Files\Tesseract-OCR\tesseract.exe")
+    if _default_win_tesseract.exists():
+        pytesseract.pytesseract.tesseract_cmd = str(_default_win_tesseract)
 
 
 def extract_text_from_image(image_path):

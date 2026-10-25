@@ -1,3 +1,9 @@
+import sys
+from pathlib import Path
+
+# Make the project root importable when run as python scripts/<name>.py
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
 import pandas as pd
 
 from src.data.loader import load_raw_nse_files
