@@ -5,6 +5,187 @@ Newest session first.
 
 ---
 
+## Session 8 — 2026-10-31 (volatility figures, error messages, price date)
+
+Request: work on the review items about hardcoded figures on the volatility page, the
+"10-year" heading, setup errors shown as generic failures, and stale prices.
+
+**Changes**
+- `src/forecasting/benchmark_summary.py` (new): directional accuracy, Spearman correlation, the
+  GARCH-vs-LSTM RMSE gap, the latest EWMA, and the volatility regimes (shares and next-day stay
+  probabilities). All computed from the out-of-sample forecasts or the return history.
+- `/api/forecasting/comparison` returns `summary`, `regimes` and `static_volatility`.
+- `static/volatility.html` and `static/terminal.js` (`renderVolatilitySummary`):
+  - Every number that was typed in is now filled from the response, or is shown as `—`.
+  - Model badges show each model's RMSE rank, not fixed labels such as "Top Performer".
+  - "Quantitative Finding" is generated from the numbers, not typed in.
+  - The "Baseline LSTM" row is marked "Not run": no returns-only model is computed here.
+  - "Volatility-Aware Attention Block" is now "Volatility-aware features". The model has no
+    attention layer.
+  - "PyTorch 2.4 | CuDNN | Lag-21" is now "60-day lookback | 21-day horizon", which matches the
+    code.
+  - Heading: "10-Year OOS Horizon" is now "Out-of-Sample Test Window".
+- Setup errors:
+  - `src/input/ocr_engine.py`: a missing Tesseract raises a clear `RuntimeError`.
+  - `/api/portfolio/ocr` returns 503 with that message.
+  - A global handler returns HTTP 500 with the error type. The full traceback stays in the log.
+- Stale prices:
+  - `/api/portfolio/holdings` returns `price_as_of`, the oldest stored date among the valued stocks.
+  - The Ingestion page shows "Prices as of …", and turns the text warning colour after 30 days.
+- Tests:
+  - `tests/forecasting_test/test_benchmark_summary.py` (new): small known inputs for each
+    computation.
+  - `tests/api_test/test_error_messages.py` (new): the 503 message, the 500 error type with no
+    leaked message, and the `price_as_of` date.
+
+**What the computed figures show** (TCS 10 + INFY 5, 122 out-of-sample days)
+- RMSE: EWMA 8.2% is lowest, LSTM 8.5%, GARCH 9.0%, rolling 9.2%. The old page claimed the LSTM
+  was the top performer.
+- LSTM directional accuracy 25.6%. Rolling 37.2%.
+- LSTM–realized Spearman −0.07. The old card said +10.2%.
+- GARCH's RMSE is 6.7% above the LSTM's.
+
+**Checks**
+- New and API tests: 44 pass. The wiring check passes. `node --check static/terminal.js` passes.
+- Live endpoint on stored data: the numbers above.
+- Full suite: 207 passed in 9 min 23 s.
+
+**Open items**
+- Risk and Monte Carlo pages still show fixed figures ("-3.53% GARCH", "Static 1.91%", "25.00%",
+  the rupee values on the Monte Carlo page). The risk page has about 75 text nodes with digits,
+  and the Monte Carlo page about 39. Each needs its own data source. Not done in this session.
+- Stored prices end in September 2026. NSE live prices return 403. A refresh needs newer CSVs.
+- The volatility page's "Active Asset Sigma & Covariance Slice" block still shows fixed values.
+  Not checked in this session.
+
+---
+
+## Session 7 — 2026-10-31 (admin security follow-ups)
+
+Request: `.env` support, a sign-in rate limit, no cross-origin access, and sign-in for the
+analysis endpoints.
+
+**Changes**
+- `src/config.py` (new): `load_env_file()` reads `.env` in the project root at startup. A variable
+  already set in the environment wins over the file. `app.py` calls it at import time.
+- `.env` (new, git-ignored) and `.env.example` (tracked): the password line, left empty. The
+  original `.env` never existed in this project, so it could not be recovered. The file was
+  recreated empty, and the user then filled in the password line.
+- `src/auth/login_limit.py` (new): after 5 wrong passwords from one address, the address is
+  locked out for 15 minutes, even for the right password. A successful sign-in clears the count.
+  Counts are in memory.
+- `app.py`:
+  - CORS middleware removed. The pages and the API share an origin, so browsers need no
+    cross-origin access.
+  - Admin sign-in returns 429 while locked out.
+  - Analysis endpoints now require sign-in: `/api/portfolio/current`, `/risk`, `/series`,
+    `/api/forecasting/comparison`, `/api/monte-carlo`, `/api/scenarios`, `/api/overview`,
+    `/api/analyze`.
+  - Left open because the home page uses them: `/api/symbols`, `/api/portfolio/holdings`,
+    `/api/my-portfolio`, `/health`.
+- Tests:
+  - `tests/api_test/test_admin_auth.py`: lockout after 5 failures, lockout cleared by success,
+    analysis endpoints refused without sign-in, home-page endpoints open.
+  - `tests/api_test/test_env_file.py` (new): `.env` parsing, quoting, and not overriding the
+    terminal.
+- `README.md`: setup now uses `.env`; the API table marks admin endpoints.
+
+**Checks**
+- API tests: 35 pass (before the README edits).
+- Wiring check: passes.
+- Live server, with no password set: sign-in returns 503. Analysis endpoint without sign-in:
+  401. `/api/symbols`: 200. A cross-origin request gets no `Access-Control-Allow-Origin`. The
+  sixth wrong password returns 429, and the right password is refused while locked.
+
+**Open items**
+- Sign-in cookie is not `Secure`, since the app runs on plain HTTP locally. Set it when served
+  over HTTPS.
+- Lockout counts reset on restart and are not shared across processes.
+
+---
+
+## Session 6 — 2026-10-31 (code review follow-ups)
+
+Request: fix the items from the project review that were contained: session scope, upload
+limits, error handling, cache growth, and test markers.
+
+**Changes**
+- `app.py`:
+  - Holdings are per browser. A middleware gives each browser a random `risklens_session`
+    cookie (httponly, samesite=lax). The saved and OCR-detected holdings are stored under that
+    id, in memory and capped at 1000 sessions. Before, one module-level dict was shared by
+    every visitor.
+  - Uploads (`/api/data/upload`, `/api/portfolio/ocr`) read at most one byte past their limit,
+    so an oversize file is rejected without being loaded whole.
+  - Only `ValueError` and `FileNotFoundError` become HTTP 400 (`USER_ERRORS`). Any other
+    exception is left to FastAPI and returns HTTP 500. `/api/portfolio/current` still returns
+    `status: "partial"` on any error, as before.
+  - `_FORECAST_CACHE` is capped at 32 entries and drops the oldest.
+  - `/api/forecasting/comparison` returns `garch_persistence` (α+β and the shock half-life in
+    sessions, `ln 0.5 / ln(α+β)`).
+- `static/volatility.html` and `static/terminal.js`: two hardcoded figures now come from data.
+  - "Validated over N=…" shows the number of dates the models were scored on (`series.dates`).
+    It was a fixed 2,684.
+  - The "14.2 Sessions / Mean Shock Recovery / LSTM fast damping" card is now "GARCH Shock
+    Half-Life", computed as above. Nothing in the code had produced 14.2, and the old label
+    described a quantity that was never calculated.
+- Admin sign-in (added after the placeholder change):
+  - `RISKLENS_ADMIN_PASSWORD` is read at sign-in. Unset means sign-in returns 503.
+  - `POST /api/admin/login` checks the password with `hmac.compare_digest` and sets an httponly,
+    samesite=strict cookie for a random token. `POST /api/admin/logout` removes it.
+  - Sign-ins are stored in SQLite (`data/risklens.db`, git-ignored) by `src/auth/admin_sessions.py`.
+    Only the SHA-256 hash of each token is stored. A sign-in lasts 12 hours, and expired rows are
+    removed on the next sign-in. They survive a server restart; checked by signing in, restarting
+    the server, and reusing the cookie (200, then 303 without the cookie).
+  - `require_admin` guards `/api/data/upload`, `/api/portfolio/save` and `/api/portfolio/ocr`.
+  - Admin pages (`/admin`, `/overview`, `/ingestion`, `/risk`, `/volatility`, `/monte-carlo`,
+    `/kinetix`) redirect to `/login?next=…`. `/` and `/login` stay public.
+  - `static/login.html` (new): the sign-in form.
+  - The home page only calls read-only endpoints, so it is unaffected.
+- `tests/api_test/test_admin_auth.py` (new): 17 tests. Writes need sign-in, admin pages redirect,
+  public pages stay open, sign-in is refused without a password, a wrong password is refused,
+  the right password unlocks, logout locks again, only a hash is stored, and an expired sign-in
+  is refused. Each test uses its own temporary database.
+- `tests/api_test/test_app_sessions.py`: its autouse fixture skips the admin check, since those
+  tests cover sessions, not sign-in.
+- `tests/api_test/test_app_sessions.py` (new): 5 tests. Two browsers stay separate, a cookie is
+  issued, an oversize upload is rejected and not stored, bad input gives 400, a server fault
+  gives 500. The portfolio builder is stubbed, so these need no price data.
+- `tests/conftest.py` (new): marks the slow tests with `pytest.mark.slow`. These are the LSTM
+  tests and four long risk backtests (`test_real_portfolio_a_oos_forecasting`,
+  `test_dynamic_vs_historical_var`, `test_dynamic_var_validation`, `test_dynamic_backtesting`).
+- `pytest.ini`: registers the `slow` marker.
+- `requirements-dev.txt` (new): `-r requirements.txt` plus `httpx`, which `TestClient` needs.
+- `README.md`: session wording, the 500/400 rule, the test count, and the `pytest -m "not slow"`
+  command.
+
+**Checks**
+- Full suite (before the marker fix): 168 passed in 439 s. The durations showed the four long
+  non-LSTM tests were not marked, so the marker was corrected afterwards.
+- Fast subset `pytest -m "not slow"`: 122 passed, 46 deselected, 2 min.
+- `scripts/check_frontend_wiring.py`: passes.
+- The full suite was not re-run after the marker change. Only the marking changed, and the
+  fast subset was run after it.
+
+**Open items**
+- CORS still allows any origin. Sign-in has no rate limit. The read-only analysis endpoints are
+  still open to anyone who can reach the server.
+- The forecast cache cap has no test.
+- Session holdings are in memory, so they are lost on server restart.
+- Other hardcoded figures on the volatility page: "GARCH(1,1) (α+β=0.852)", "0.852",
+  "43.0% (ρ=0.430)", "+10.2% vs rolling", "LSTM Spearman +10.2%", "GARCH RMSE Lead: -1.3%",
+  "20.72% ann. σ", and the "Quantitative Finding" text.
+- The volatility heading says "10-Year OOS Horizon", but the test window is 6 months
+  (`test_months=6`). The sample size shown is the real count, so the heading now contradicts it.
+- Stored price data ends in September 2026.
+- No CI workflow.
+- `requirements.txt` still mixes pinned and unpinned packages and lists `pytest`.
+- `.gitignore` last line `.SESSION_LOG.md` (leading dot) does not match the file name.
+- Tracked `design/` zip and extracted copy, and `outputs/` PNG.
+- `app.py` is still one file of about 1,000 lines.
+
+---
+
 ## Session 5 — 2026-10-25 (simple user page, admin tools separated)
 
 Request: the user should see a simple page where they enter their portfolio and get a

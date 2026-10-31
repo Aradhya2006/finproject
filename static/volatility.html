@@ -65,9 +65,9 @@
 <div class="flex items-center justify-between px-space-2xs">
 <div class="flex items-center gap-space-sm">
 <span class="material-symbols-outlined text-primary text-xl">analytics</span>
-<h3 class="font-headline-sm text-headline-sm text-on-surface">Empirical Model Benchmark Matrix (10-Year OOS Horizon)</h3>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Empirical Model Benchmark Matrix (Out-of-Sample Test Window)</h3>
 </div>
-<span class="font-stat-sm text-stat-sm text-on-surface-variant">Validated over N=2,684 Trading Sessions</span>
+<span class="font-stat-sm text-stat-sm text-on-surface-variant">Validated over N=<span id="vol-sample-size">—</span> Trading Sessions</span>
 </div>
 <div class="overflow-x-auto rounded-xl bg-surface-container-low shadow-sm">
 <table class="w-full text-left">
@@ -94,7 +94,7 @@
 <td id="vol-rolling-corr" class="py-space-md px-space-md text-right font-stat-md text-stat-md text-on-surface">—</td>
 <td class="py-space-md px-space-lg font-body-sm text-body-sm text-on-surface-variant">Equal weights in historical window (Severe lag on tail spikes)</td>
 <td class="py-space-md px-space-lg text-center">
-<span class="inline-block px-space-sm py-space-2xs rounded-full bg-surface-variant text-on-surface-variant font-stat-sm text-stat-sm">Baseline</span>
+<span id="vol-rolling-badge" class="inline-block px-space-sm py-space-2xs rounded-full bg-surface-variant text-on-surface-variant font-stat-sm text-stat-sm">—</span>
 </td>
 </tr>
 <tr class="hover:bg-surface-container/40 transition-colors">
@@ -107,9 +107,9 @@
 <td id="vol-ewma-mae" class="py-space-md px-space-md text-right font-stat-md text-stat-md text-on-surface">—</td>
 <td id="vol-ewma-rmse" class="py-space-md px-space-md text-right font-stat-md text-stat-md text-on-surface">—</td>
 <td id="vol-ewma-corr" class="py-space-md px-space-md text-right font-stat-md text-stat-md text-on-surface">—</td>
-<td class="py-space-md px-space-lg font-body-sm text-body-sm text-on-surface-variant">Faster shock response (20.72% ann. σ), zero mean-reversion drift</td>
+<td class="py-space-md px-space-lg font-body-sm text-body-sm text-on-surface-variant">Faster shock response (latest forecast <span id="vol-ewma-latest">—</span> ann. σ), zero mean-reversion drift</td>
 <td class="py-space-md px-space-lg text-center">
-<span class="inline-block px-space-sm py-space-2xs rounded-full bg-primary/10 text-primary font-stat-sm text-stat-sm">Competitive</span>
+<span id="vol-ewma-badge" class="inline-block px-space-sm py-space-2xs rounded-full bg-primary/10 text-primary font-stat-sm text-stat-sm">—</span>
 </td>
 </tr>
 <tr class="hover:bg-surface-container/40 transition-colors">
@@ -124,7 +124,7 @@
 <td id="vol-garch-corr" class="py-space-md px-space-md text-right font-stat-md text-stat-md text-on-surface">—</td>
 <td class="py-space-md px-space-lg font-body-sm text-body-sm text-on-surface-variant">Volatility clustering persistence; long-run variance convergence</td>
 <td class="py-space-md px-space-lg text-center">
-<span class="inline-block px-space-sm py-space-2xs rounded-full bg-secondary/15 text-secondary font-stat-sm text-stat-sm">Benchmark</span>
+<span id="vol-garch-badge" class="inline-block px-space-sm py-space-2xs rounded-full bg-secondary/15 text-secondary font-stat-sm text-stat-sm">—</span>
 </td>
 </tr>
 <tr class="hover:bg-surface-container/40 transition-colors opacity-70">
@@ -134,12 +134,12 @@
 <span class="font-stat-sm text-stat-sm text-on-surface-variant">Returns Sequence Only</span>
 </div>
 </td>
-<td class="py-space-md px-space-md text-right font-stat-md text-stat-md text-error">0.050694</td>
-<td class="py-space-md px-space-md text-right font-stat-md text-stat-md text-error">0.063624</td>
-<td class="py-space-md px-space-md text-right font-stat-md text-stat-md text-error">0.044</td>
-<td class="py-space-md px-space-lg font-body-sm text-body-sm text-error">Poor signal-to-noise ratio; returns sequence lacks variance memory</td>
+<td class="py-space-md px-space-md text-right font-stat-md text-stat-md text-on-surface-variant">—</td>
+<td class="py-space-md px-space-md text-right font-stat-md text-stat-md text-on-surface-variant">—</td>
+<td class="py-space-md px-space-md text-right font-stat-md text-stat-md text-on-surface-variant">—</td>
+<td class="py-space-md px-space-lg font-body-sm text-body-sm text-on-surface-variant">Returns-only model. Not run on this page.</td>
 <td class="py-space-md px-space-lg text-center">
-<span class="inline-block px-space-sm py-space-2xs rounded-full bg-error/15 text-error font-stat-sm text-stat-sm">Suboptimal</span>
+<span class="inline-block px-space-sm py-space-2xs rounded-full bg-surface-variant text-on-surface-variant font-stat-sm text-stat-sm">Not run</span>
 </td>
 </tr>
 <tr class="bg-primary/5 hover:bg-primary/10 transition-colors">
@@ -148,7 +148,7 @@
 <span class="w-2 h-2 rounded-full bg-primary"></span>
 <div class="flex flex-col">
 <span class="font-body-md text-body-md font-semibold text-primary">Enhanced LSTM (Multi-feature)</span>
-<span class="font-stat-sm text-stat-sm text-primary-fixed-dim">Volatility-Aware Attention Block</span>
+<span class="font-stat-sm text-stat-sm text-primary-fixed-dim">Volatility-aware features</span>
 </div>
 </div>
 </td>
@@ -157,7 +157,7 @@
 <td id="vol-lstm-corr" class="py-space-md px-space-md text-right font-stat-md text-stat-md text-primary font-bold">—</td>
 <td class="py-space-md px-space-lg font-body-sm text-body-sm text-primary-fixed-dim font-medium">Returns + |R| + R² + Rolling(21D) + EWMA(0.94) Features</td>
 <td class="py-space-md px-space-lg text-center">
-<span class="inline-block px-space-sm py-space-2xs rounded-full bg-primary text-on-primary font-stat-sm text-stat-sm font-semibold">Top Performer</span>
+<span id="vol-lstm-badge" class="inline-block px-space-sm py-space-2xs rounded-full bg-primary text-on-primary font-stat-sm text-stat-sm font-semibold">—</span>
 </td>
 </tr>
 </tbody>
@@ -170,14 +170,14 @@
 <div class="flex flex-col">
 <span class="font-label-caps text-label-caps text-secondary uppercase tracking-wider">Quantitative Finding</span>
 <span class="font-body-md text-body-md text-on-surface font-medium">
-            Return-only LSTM is ineffective; volatility-aware LSTM outperforms, with GARCH remaining exceptionally competitive.
+            <span id="vol-finding">—</span>
           </span>
 </div>
 </div>
 <div class="flex items-center gap-space-sm self-end sm:self-auto font-stat-sm text-stat-sm text-on-surface-variant">
-<span>LSTM Spearman +10.2%</span>
+<span>LSTM Spearman <span id="vol-spearman">—</span></span>
 <span>•</span>
-<span>GARCH RMSE Lead: -1.3%</span>
+<span>GARCH RMSE vs LSTM <span id="vol-garch-gap">—</span></span>
 </div>
 </div>
 </div>
@@ -211,16 +211,16 @@
 <span class="font-label-caps text-label-caps text-on-surface-variant">LATEST FORECAST (T+1D)</span>
 <div class="flex items-center gap-space-sm font-stat-sm text-stat-sm">
 <span class="text-primary font-bold">LSTM: <span id="latest-lstm-forecast">—</span></span>
-<span class="text-secondary">GARCH: —</span>
+<span class="text-secondary">GARCH: <span id="latest-garch-chart">—</span></span>
 </div>
 </div>
 </div>
 <!-- Trajectory Chart Metrics Footer -->
 <div class="grid grid-cols-3 gap-space-sm pt-space-xs">
 <div class="flex flex-col p-space-sm rounded-lg bg-surface-container">
-<span class="font-label-caps text-label-caps text-on-surface-variant">Mean Shock Recovery</span>
-<span class="font-stat-md text-stat-md text-on-surface font-semibold">14.2 Sessions</span>
-<span class="font-stat-sm text-stat-sm text-secondary">LSTM fast damping</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant">GARCH Shock Half-Life</span>
+<span id="vol-garch-half-life" class="font-stat-md text-stat-md text-on-surface font-semibold">—</span>
+<span class="font-stat-sm text-stat-sm text-secondary">Days for a volatility shock to halve</span>
 </div>
 <div class="flex flex-col p-space-sm rounded-lg bg-surface-container">
 <span class="font-label-caps text-label-caps text-on-surface-variant">Clustering Parameter (α+β)</span>
@@ -229,8 +229,8 @@
 </div>
 <div class="flex flex-col p-space-sm rounded-lg bg-surface-container">
 <span class="font-label-caps text-label-caps text-on-surface-variant">Directional Accuracy</span>
-<span class="font-stat-md text-stat-md text-primary font-semibold">43.0% (ρ=0.430)</span>
-<span class="font-stat-sm text-stat-sm text-primary">+10.2% vs rolling</span>
+<span id="vol-dir-acc" class="font-stat-md text-stat-md text-primary font-semibold">—</span>
+<span id="vol-dir-vs-rolling" class="font-stat-sm text-stat-sm text-primary">—</span>
 </div>
 </div>
 </div>
@@ -242,7 +242,7 @@
 <h4 class="font-headline-sm text-headline-sm text-on-surface">Volatility Regime Detection &amp; Markov Tercile</h4>
 </div>
 <span class="px-space-sm py-space-2xs rounded-full bg-secondary/10 text-secondary font-stat-sm text-stat-sm font-semibold">
-            CURRENT: NORMAL REGIME (68.4%)
+            CURRENT: <span id="regime-current">—</span> REGIME
           </span>
 </div>
 <div class="grid grid-cols-1 md:grid-cols-3 gap-space-md">
@@ -252,9 +252,9 @@
 <span class="font-label-caps text-label-caps text-secondary uppercase">Low Regime</span>
 <span class="font-stat-sm text-stat-sm text-on-surface-variant">&lt; 14.0%</span>
 </div>
-<span class="font-stat-lg text-stat-lg text-secondary font-bold">18.2%</span>
+<span id="regime-low-share" class="font-stat-lg text-stat-lg text-secondary font-bold">—</span>
 <div class="w-full bg-surface-variant h-1.5 rounded-full overflow-hidden">
-<div class="bg-secondary h-full" style="width: 18.2%"></div>
+<div id="regime-low-bar" class="bg-secondary h-full" style="width: 0%"></div>
 </div>
 <span class="font-body-sm text-body-sm text-on-surface-variant">Compressing spread</span>
 </div>
@@ -264,9 +264,9 @@
 <span class="font-label-caps text-label-caps text-primary uppercase">Normal Regime</span>
 <span class="font-stat-sm text-stat-sm text-on-surface-variant">14.0% – 22.0%</span>
 </div>
-<span class="font-stat-lg text-stat-lg text-primary font-bold">68.4%</span>
+<span id="regime-normal-share" class="font-stat-lg text-stat-lg text-primary font-bold">—</span>
 <div class="w-full bg-surface-variant h-1.5 rounded-full overflow-hidden">
-<div class="bg-primary h-full" style="width: 68.4%"></div>
+<div id="regime-normal-bar" class="bg-primary h-full" style="width: 0%"></div>
 </div>
 <span class="font-body-sm text-body-sm text-primary font-medium">Equilibrium baseline</span>
 </div>
@@ -276,9 +276,9 @@
 <span class="font-label-caps text-label-caps text-tertiary-container uppercase">High Stress</span>
 <span class="font-stat-sm text-stat-sm text-on-surface-variant">&gt; 22.0%</span>
 </div>
-<span class="font-stat-lg text-stat-lg text-tertiary-container font-bold">13.4%</span>
+<span id="regime-high-share" class="font-stat-lg text-stat-lg text-tertiary-container font-bold">—</span>
 <div class="w-full bg-surface-variant h-1.5 rounded-full overflow-hidden">
-<div class="bg-tertiary-container h-full" style="width: 13.4%"></div>
+<div id="regime-high-bar" class="bg-tertiary-container h-full" style="width: 0%"></div>
 </div>
 <span class="font-body-sm text-body-sm text-on-surface-variant">Tail risk threshold</span>
 </div>
@@ -290,9 +290,9 @@
 <span class="font-stat-sm text-stat-sm text-on-surface-variant">Stationary Distribution Stable</span>
 </div>
 <div class="grid grid-cols-3 gap-space-sm font-stat-sm text-stat-sm text-center">
-<div class="p-space-xs rounded bg-surface-container">P(L→L): <span class="text-on-surface font-semibold">0.824</span></div>
-<div class="p-space-xs rounded bg-surface-container">P(N→N): <span class="text-primary font-semibold">0.891</span></div>
-<div class="p-space-xs rounded bg-surface-container">P(H→H): <span class="text-tertiary-container font-semibold">0.718</span></div>
+<div class="p-space-xs rounded bg-surface-container">P(L→L): <span id="stay-low" class="text-on-surface font-semibold">—</span></div>
+<div class="p-space-xs rounded bg-surface-container">P(N→N): <span id="stay-normal" class="text-primary font-semibold">—</span></div>
+<div class="p-space-xs rounded bg-surface-container">P(H→H): <span id="stay-high" class="text-tertiary-container font-semibold">—</span></div>
 </div>
 </div>
 </div>
@@ -322,13 +322,13 @@
 <div class="grid grid-cols-2 gap-space-md">
 <div class="p-space-md rounded-lg bg-surface-container flex flex-col gap-space-2xs">
 <span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Static Portfolio Vol</span>
-<span class="font-stat-lg text-stat-lg text-on-surface">21.36%</span>
-<span class="font-stat-sm text-stat-sm text-on-surface-variant">Historical 252D Sample</span>
+<span id="static-vol" class="font-stat-lg text-stat-lg text-on-surface">—</span>
+<span class="font-stat-sm text-stat-sm text-on-surface-variant">Full history, annualized</span>
 </div>
 <div class="p-space-md rounded-lg bg-primary/10 flex flex-col gap-space-2xs">
 <span class="font-label-caps text-label-caps text-primary uppercase">Dynamic Volatility (σ_p)</span>
 <span id="latest-garch-forecast" class="font-stat-lg text-stat-lg text-primary font-bold">—</span>
-<span class="font-stat-sm text-stat-sm text-secondary font-medium">-3.53% (Efficient Capital)</span>
+<span id="vol-dynamic-delta" class="font-stat-sm text-stat-sm text-secondary font-medium">—</span>
 </div>
 </div>
 <!-- Dynamic Covariance Matrix Visual Slice (Top NSE Holdings) -->
@@ -391,7 +391,7 @@
 </div>
 <div class="flex flex-col">
 <span class="font-body-md text-body-md text-on-surface font-semibold">Tensor Core Pipeline</span>
-<span class="font-stat-sm text-stat-sm text-on-surface-variant">PyTorch 2.4 | CuDNN Accelerated | Lag-21 Window</span>
+<span class="font-stat-sm text-stat-sm text-on-surface-variant">PyTorch LSTM | 60-day lookback | 21-day horizon</span>
 </div>
 </div>
 <div class="flex items-center gap-space-xs font-stat-sm text-stat-sm text-secondary">

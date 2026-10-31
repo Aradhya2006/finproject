@@ -49,6 +49,11 @@ def extract_text_from_image(image_path):
             image,
             config="--psm 6",
         )
+    except pytesseract.TesseractNotFoundError as exc:
+        raise RuntimeError(
+            "Tesseract OCR is not installed or not found. Install it, or add its "
+            "folder to PATH. See the README for details."
+        ) from exc
     except Exception as exc:
         raise RuntimeError(
             "OCR extraction failed."

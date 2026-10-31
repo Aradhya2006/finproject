@@ -598,6 +598,25 @@ const RiskLens = {
     }
   },
 
+  // Shows the date of the oldest stored price in the valuation, and warns when it is over 30 days old.
+  renderPriceDate(priceAsOf) {
+    const el = document.getElementById("price-as-of");
+    if (!el) return;
+    if (!priceAsOf) {
+      el.textContent = "";
+      return;
+    }
+
+    const date = new Date(`${priceAsOf}T00:00:00`);
+    const days = Math.floor((Date.now() - date.getTime()) / 86400000);
+    const label = date.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+    const stale = days > 30;
+    el.textContent = stale
+      ? `Prices as of ${label}, ${days} days ago. Upload the latest daily CSV below to update them.`
+      : `Prices as of ${label}.`;
+    el.classList.toggle("text-tertiary", stale);
+  },
+
   // Redraw the summary and table. Holdings with no price history are shown
   // in the table too, so a stock you add is never silently dropped.
   renderValuation(data, holdings = {}) {
@@ -622,6 +641,7 @@ const RiskLens = {
       );
     }
 
+    this.renderPriceDate(data ? data.price_as_of : null);
     this.renderHoldingsTable(rows, missing, holdings);
     this.renderAllocation(rows);
 
@@ -850,10 +870,88 @@ const RiskLens = {
         this.setText("latest-lstm-forecast", this.formatPercent(data.latest_forecast.lstm_annualized));
       }
 
+      this.setText("vol-sample-size", data.series.dates.length.toLocaleString("en-US"));
+
+      const halfLife = data.garch_persistence?.half_life_sessions;
+      this.setText(
+        "vol-garch-half-life",
+        this.isMissing(halfLife) ? "—" : `${halfLife.toFixed(1)} Sessions`,
+      );
+
+      this.renderVolatilitySummary(data);
+
       Charts.setSvg("vol-chart", Charts.volatility(data.series));
       this.showToast("Volatility benchmark updated.", "success");
     } catch (e) {
       this.showToast("Volatility: " + e.message, "error");
+    }
+  },
+
+  // Fills the figures on the volatility page that the backend computes.
+  // Every number here comes from the response, so the page shows nothing
+  // that the models did not produce.
+  renderVolatilitySummary(data) {
+    const pct = (x, digits = 1) => (this.isMissing(x) ? "—" : (x * 100).toFixed(digits) + "%");
+    const prob = (x) => (this.isMissing(x) ? "—" : x.toFixed(3));
+    const signedPoints = (x) => (this.isMissing(x) ? "—" : `${x > 0 ? "+" : ""}${x.toFixed(1)} pts`);
+    const summary = data.summary;
+    const modelKeys = ["rolling", "ewma", "garch", "lstm"];
+
+    // Rank by RMSE, lowest first. Each row shows its rank.
+    const ranked = modelKeys
+      .filter((key) => !this.isMissing(data[key]?.rmse))
+      .sort((a, b) => data[a].rmse - data[b].rmse);
+    ranked.forEach((key, index) => this.setText(`vol-${key}-badge`, `Rank ${index + 1} of ${ranked.length}`));
+
+    if (!summary) return;
+
+    this.setText("vol-ewma-latest", pct(summary.latest_ewma, 2));
+    this.setText("vol-spearman", prob(summary.lstm_spearman));
+    this.setText(
+      "vol-garch-gap",
+      this.isMissing(summary.garch_rmse_vs_lstm_pct)
+        ? "—"
+        : `${summary.garch_rmse_vs_lstm_pct > 0 ? "+" : ""}${summary.garch_rmse_vs_lstm_pct.toFixed(1)}%`,
+    );
+
+    const direction = summary.directional_accuracy;
+    this.setText("vol-dir-acc", pct(direction.lstm));
+    this.setText(
+      "vol-dir-vs-rolling",
+      this.isMissing(direction.lstm) || this.isMissing(direction.rolling)
+        ? "—"
+        : `${signedPoints((direction.lstm - direction.rolling) * 100)} vs rolling`,
+    );
+
+    if (data.lstm && data.garch) {
+      const better = data.lstm.rmse < data.garch.rmse ? "LSTM" : "GARCH";
+      this.setText(
+        "vol-finding",
+        `${better} has the lower out-of-sample RMSE (LSTM ${pct(data.lstm.rmse, 2)}, GARCH ${pct(data.garch.rmse, 2)}). ` +
+          `The LSTM moved in the same direction as realized volatility on ${pct(direction.lstm, 0)} of days.`,
+      );
+    }
+
+    const regimes = data.regimes;
+    if (regimes) {
+      this.setText("regime-current", regimes.current.toUpperCase());
+      ["low", "normal", "high"].forEach((name) => {
+        const share = regimes.shares[name];
+        this.setText(`regime-${name}-share`, pct(share));
+        const bar = document.getElementById(`regime-${name}-bar`);
+        if (bar && !this.isMissing(share)) bar.style.width = `${(share * 100).toFixed(1)}%`;
+        this.setText(`stay-${name}`, prob(regimes.stay[name]));
+      });
+    }
+
+    this.setText("static-vol", pct(data.static_volatility));
+    const latestGarch = data.latest_forecast?.garch_annualized;
+    this.setText("latest-garch-chart", pct(latestGarch));
+    if (!this.isMissing(latestGarch) && !this.isMissing(data.static_volatility)) {
+      this.setText(
+        "vol-dynamic-delta",
+        `${signedPoints((latestGarch - data.static_volatility) * 100)} vs static`,
+      );
     }
   },
 

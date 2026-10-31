@@ -7,15 +7,17 @@ or
     python app.py
 """
 
+from contextvars import ContextVar
 from pathlib import Path
+import hmac
 import os
 import tempfile
+import uuid
 from typing import Dict, Optional
 
-from fastapi import FastAPI, HTTPException, UploadFile, File, Form
+from fastapi import Depends, FastAPI, HTTPException, Request, Response, UploadFile, File, Form
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from pydantic import BaseModel
 import numpy as np
 import pandas as pd
@@ -27,12 +29,16 @@ from src.input.portfolio_factory import create_portfolio
 from src.input.manual import validate_holdings
 from src.input.ocr import extract_holdings_detailed
 
+from src.auth import admin_sessions, login_limit
+from src.config import load_env_file
 from src.data.store import (
     BENCHMARK_SYMBOL,
+    MAX_UPLOAD_BYTES,
     has_history,
     list_symbols,
     missing_history,
     save_upload,
+    symbol_status,
 )
 from src.finance.beta import calculate_beta
 from src.finance.dataset import create_price_dataset, calculate_asset_returns, load_clean_asset_data
@@ -59,6 +65,7 @@ from src.risk.chart_series import (
     value_histogram,
 )
 
+from src.forecasting.benchmark_summary import benchmark_summary, volatility_regimes
 from src.forecasting.garch import fit_garch, forecast_garch_volatility
 from src.forecasting.baseline_evaluation import evaluate_baseline_models
 from src.forecasting.evaluation import calculate_mae, calculate_rmse, calculate_forecast_correlation
@@ -69,6 +76,8 @@ from src.forecasting.lstm_training import train_lstm
 from src.forecasting.lstm_evaluation import calculate_lstm_metrics
 
 
+load_env_file()  # RISKLENS_ADMIN_PASSWORD and other settings from .env
+
 BASE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "static"
 
@@ -76,17 +85,50 @@ STATIC_DIR = BASE_DIR / "static"
 MAX_OCR_BYTES = 10 * 1024 * 1024
 OCR_IMAGE_TYPES = {".png", ".jpg", ".jpeg", ".bmp", ".webp", ".tif", ".tiff"}
 
+# Errors caused by bad input or missing stored history. The endpoints return
+# these as HTTP 400 with the message. Any other exception is a server fault
+# and is left to FastAPI, which returns HTTP 500.
+USER_ERRORS = (ValueError, FileNotFoundError)
+
 app = FastAPI(title="RiskLens Quantitative Terminal", version="2.0.0")
 
-# Enable CORS for local development and external clients. Credentials are
-# not used by the frontend, so they stay off (browsers reject "*" with them).
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=False,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+
+@app.exception_handler(Exception)
+async def unexpected_error(request: Request, exc: Exception):
+    """
+    Unexpected faults return the error type, so the page can say what went
+    wrong. The full traceback is still written to the server log.
+    """
+    return JSONResponse(
+        status_code=500,
+        content={"detail": f"Server error ({type(exc).__name__}). Details are in the server log."},
+    )
+
+
+
+@app.middleware("http")
+async def attach_browser_session(request: Request, call_next):
+    """Send admin pages to sign-in, and set the session id for each request."""
+    if request.url.path in ADMIN_PAGES and not _is_admin(request):
+        return RedirectResponse(f"/login?next={request.url.path}", status_code=303)
+
+    session_id = request.cookies.get(SESSION_COOKIE)
+    is_new = not session_id or len(session_id) > 64
+    if is_new:
+        session_id = uuid.uuid4().hex
+
+    token = _current_session_id.set(session_id)
+    try:
+        response = await call_next(request)
+    finally:
+        _current_session_id.reset(token)
+
+    if is_new:
+        response.set_cookie(SESSION_COOKIE, session_id, httponly=True, samesite="lax")
+    return response
+
+# No CORS middleware: the pages and the API are served from the same address,
+# so browsers need no cross-origin access. Other websites cannot call the API.
 
 # Mount static files
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
@@ -103,20 +145,49 @@ SECTOR_MAP = {
     "SBIN": "BANKING",
 }
 
-# No hardcoded portfolio. The session starts empty and is filled by the user
+# No hardcoded portfolio. Each browser starts empty and is filled by the user
 # (manual entry, JSON/CSV paste, or OCR). The browser sends its own holdings
 # with each request; the session is only the fallback when none are sent.
-session_state: Dict[str, Dict[str, float]] = {"holdings": {}}
+# Holdings are kept per browser: a random cookie identifies the session.
+SESSION_COOKIE = "risklens_session"
+MAX_SESSIONS = 1000
+_sessions: Dict[str, Dict[str, float]] = {}
+_current_session_id: ContextVar[str] = ContextVar("current_session_id", default="")
+
+
+def _session_holdings() -> Dict[str, float]:
+    """Holdings saved by the browser that sent the current request."""
+    return _sessions.get(_current_session_id.get(), {})
+
+
+def _save_session_holdings(holdings: Dict[str, float]) -> None:
+    """Keep holdings for the browser that sent the current request."""
+    session_id = _current_session_id.get()
+    if session_id not in _sessions and len(_sessions) >= MAX_SESSIONS:
+        _sessions.pop(next(iter(_sessions)))  # drop the oldest session
+    _sessions[session_id] = holdings
 
 
 def _resolve_holdings(request) -> dict:
     """Holdings from the request body, else the session. Empty if neither."""
     if request and request.holdings:
         return request.holdings
-    return session_state["holdings"]
+    return _session_holdings()
 
-# In-memory cache for slow ML/forecasting models
+# In-memory cache for slow ML/forecasting models, capped so a long-running
+# server does not keep every holdings combination it has ever seen.
 _FORECAST_CACHE: Dict[str, dict] = {}
+MAX_FORECAST_CACHE = 32
+
+
+def _price_as_of(symbols):
+    """
+    The oldest last-price date among the symbols, as YYYY-MM-DD. The oldest is
+    reported so one stale stock is not hidden behind fresh ones.
+    """
+    dates = [symbol_status(symbol)["last_date"] for symbol in symbols]
+    known = [date for date in dates if date]
+    return min(known) if known else None
 
 
 def _holdings_cache_key(holdings: dict) -> str:
@@ -162,6 +233,75 @@ PERIOD_DAYS = {"1w": 5, "1m": 21, "3m": 63, "6m": 126, "1y": 252}
 
 class PeriodRequest(HoldingsRequest):
     period: str = "1m"
+
+
+# ============================================================
+# ADMIN ACCESS
+# ============================================================
+
+# Uploads, saved holdings and OCR change server data, so they need the admin
+# password. It is read from RISKLENS_ADMIN_PASSWORD on each sign-in. If that
+# variable is not set, admin access is refused.
+ADMIN_PASSWORD_ENV = "RISKLENS_ADMIN_PASSWORD"
+ADMIN_COOKIE = "risklens_admin"
+
+ADMIN_PAGES = {"/admin", "/overview", "/ingestion", "/risk", "/volatility", "/monte-carlo", "/kinetix"}
+
+
+def _is_admin(request: Request) -> bool:
+    return admin_sessions.is_valid_session(request.cookies.get(ADMIN_COOKIE))
+
+
+def require_admin(request: Request) -> None:
+    """Dependency for endpoints that change data. Returns 401 unless signed in."""
+    if not _is_admin(request):
+        raise HTTPException(status_code=401, detail="Admin sign-in required. Sign in at /login.")
+
+
+class AdminLogin(BaseModel):
+    password: str
+
+
+@app.get("/login", response_class=HTMLResponse)
+async def read_login():
+    path = Path(STATIC_DIR, "login.html")
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="Sign-in page not found.")
+    return path.read_text(encoding="utf-8")
+
+
+@app.post("/api/admin/login")
+def admin_login(body: AdminLogin, request: Request, response: Response):
+    expected = os.environ.get(ADMIN_PASSWORD_ENV, "")
+    if not expected:
+        raise HTTPException(
+            status_code=503,
+            detail="Admin access is off. Set RISKLENS_ADMIN_PASSWORD and restart the server.",
+        )
+
+    address = request.client.host if request.client else "unknown"
+    wait = login_limit.retry_after(address)
+    if wait:
+        raise HTTPException(
+            status_code=429,
+            detail=f"Too many wrong passwords. Wait {wait} seconds and try again.",
+        )
+
+    if not hmac.compare_digest(body.password.encode("utf-8"), expected.encode("utf-8")):
+        login_limit.record_failure(address)
+        raise HTTPException(status_code=401, detail="Wrong password.")
+
+    login_limit.record_success(address)
+    token = admin_sessions.create_session()
+    response.set_cookie(ADMIN_COOKIE, token, httponly=True, samesite="strict")
+    return {"status": "success"}
+
+
+@app.post("/api/admin/logout")
+def admin_logout(request: Request, response: Response):
+    admin_sessions.delete_session(request.cookies.get(ADMIN_COOKIE))
+    response.delete_cookie(ADMIN_COOKIE, httponly=True, samesite="strict")
+    return {"status": "success"}
 
 
 # ============================================================
@@ -257,7 +397,11 @@ def get_symbols():
 
 
 @app.post("/api/data/upload")
-async def upload_price_history(symbol: str = Form(...), file: UploadFile = File(...)):
+async def upload_price_history(
+    symbol: str = Form(...),
+    file: UploadFile = File(...),
+    _admin: None = Depends(require_admin),
+):
     """
     Store a daily price CSV for a symbol so it can be valued and analysed.
 
@@ -265,9 +409,11 @@ async def upload_price_history(symbol: str = Form(...), file: UploadFile = File(
     Upload the benchmark as symbol NIFTY50 to enable beta.
     """
     try:
-        content = await file.read()
+        # Read one byte past the limit so an oversize file is rejected
+        # without being loaded into memory whole.
+        content = await file.read(MAX_UPLOAD_BYTES + 1)
         result = save_upload(symbol, content)
-    except Exception as exc:
+    except USER_ERRORS as exc:
         raise HTTPException(status_code=400, detail=str(exc))
 
     # Cached forecasts were built from the old data.
@@ -277,9 +423,9 @@ async def upload_price_history(symbol: str = Form(...), file: UploadFile = File(
 
 
 @app.get("/api/portfolio/current")
-def get_current_portfolio():
+def get_current_portfolio(_admin: None = Depends(require_admin)):
     """Retrieve the current active portfolio stored in session."""
-    holdings = session_state["holdings"]
+    holdings = _session_holdings()
     if not holdings:
         return {
             "status": "empty",
@@ -323,21 +469,21 @@ def get_current_portfolio():
 
 
 @app.post("/api/portfolio/save")
-def save_portfolio(request: HoldingsRequest):
-    """Save user-updated holdings to current session state."""
+def save_portfolio(request: HoldingsRequest, _admin: None = Depends(require_admin)):
+    """Save user-updated holdings to this browser's session."""
     if not request.holdings:
         raise HTTPException(status_code=400, detail="Holdings cannot be empty.")
     try:
         holdings = validate_holdings(request.holdings)
         portfolio = create_portfolio("manual", holdings)
-        session_state["holdings"] = holdings
+        _save_session_holdings(holdings)
         return {
             "status": "success",
             "portfolio_value": portfolio.portfolio_value,
             "holdings_count": len(portfolio.assets),
             "holdings": holdings,
         }
-    except Exception as exc:
+    except USER_ERRORS as exc:
         raise HTTPException(status_code=400, detail=str(exc))
 
 
@@ -356,7 +502,7 @@ def portfolio_holdings(request: Optional[HoldingsRequest] = None):
 
     try:
         holdings = validate_holdings(holdings)
-    except Exception as exc:
+    except USER_ERRORS as exc:
         raise HTTPException(status_code=400, detail=str(exc))
 
     missing = missing_history(list(holdings))
@@ -392,13 +538,14 @@ def portfolio_holdings(request: Optional[HoldingsRequest] = None):
             "holdings_count": len(portfolio.assets),
             "rows": rows,
             "missing_symbols": missing,
+            "price_as_of": _price_as_of(list(usable)),
         }
-    except Exception as exc:
+    except USER_ERRORS as exc:
         raise HTTPException(status_code=400, detail=str(exc))
 
 
 @app.post("/api/portfolio/ocr")
-async def ocr_upload(file: UploadFile = File(...)):
+async def ocr_upload(file: UploadFile = File(...), _admin: None = Depends(require_admin)):
     """
     Extract portfolio holdings from an uploaded brokerage screenshot (Zerodha Kite, Groww).
 
@@ -412,7 +559,9 @@ async def ocr_upload(file: UploadFile = File(...)):
         if suffix not in OCR_IMAGE_TYPES:
             raise ValueError(f"Unsupported image type '{suffix}'. Use PNG, JPG, BMP, WEBP or TIFF.")
 
-        content = await file.read()
+        # Read one byte past the limit so an oversize screenshot is rejected
+        # without being loaded into memory whole.
+        content = await file.read(MAX_OCR_BYTES + 1)
 
         if not content:
             raise ValueError("Uploaded file is empty.")
@@ -425,16 +574,19 @@ async def ocr_upload(file: UploadFile = File(...)):
             tmp_path = tmp.name
 
         result = extract_holdings_detailed(tmp_path)
-    except Exception as exc:
+    except USER_ERRORS as exc:
         raise HTTPException(status_code=400, detail=str(exc))
+    except RuntimeError as exc:
+        # The OCR engine raises RuntimeError for setup problems, such as a missing Tesseract.
+        raise HTTPException(status_code=503, detail=str(exc))
     finally:
         if tmp_path and os.path.exists(tmp_path):
             os.remove(tmp_path)
 
     detected_holdings = result["holdings"]
 
-    # The detected holdings become the session portfolio.
-    session_state["holdings"] = detected_holdings
+    # The detected holdings become this browser's session portfolio.
+    _save_session_holdings(detected_holdings)
 
     return {
         "status": "success",
@@ -447,7 +599,7 @@ async def ocr_upload(file: UploadFile = File(...)):
 
 
 @app.post("/api/portfolio/risk")
-def portfolio_risk(request: Optional[HoldingsRequest] = None):
+def portfolio_risk(request: Optional[HoldingsRequest] = None, _admin: None = Depends(require_admin)):
     """
     Calculate Static vs Dynamic Risk metrics (VaR 95%, CVaR 95%, Euler risk decomposition).
     """
@@ -508,12 +660,12 @@ def portfolio_risk(request: Optional[HoldingsRequest] = None):
             },
             "contributions": contributions,
         }
-    except Exception as exc:
+    except USER_ERRORS as exc:
         raise HTTPException(status_code=400, detail=str(exc))
 
 
 @app.post("/api/portfolio/series")
-def portfolio_series(request: Optional[HoldingsRequest] = None):
+def portfolio_series(request: Optional[HoldingsRequest] = None, _admin: None = Depends(require_admin)):
     """
     Time series behind the overview and risk charts: holdings value over time,
     the benchmark rebased to the same start, daily returns, and one-day 95% VaR
@@ -571,7 +723,7 @@ def portfolio_series(request: Optional[HoldingsRequest] = None):
             "var_95_pct": float(-latest_threshold),
             "var_95_value": float(-latest_threshold * portfolio.portfolio_value),
         }
-    except Exception as exc:
+    except USER_ERRORS as exc:
         raise HTTPException(status_code=400, detail=str(exc))
 
 
@@ -616,7 +768,7 @@ def my_portfolio(request: Optional[PeriodRequest] = None):
 
 
 @app.post("/api/forecasting/comparison")
-def forecasting_comparison(request: Optional[HoldingsRequest] = None):
+def forecasting_comparison(request: Optional[HoldingsRequest] = None, _admin: None = Depends(require_admin)):
     """
     Out-of-sample comparison of Rolling / EWMA / GARCH / LSTM volatility forecasts,
     plus each model's latest T+1 point forecast.
@@ -653,6 +805,13 @@ def forecasting_comparison(request: Optional[HoldingsRequest] = None):
 
         # Baseline: GARCH(1,1)
         garch_result = fit_garch(returns_series)
+
+        # Persistence (alpha + beta) and the sessions a volatility shock takes to halve.
+        garch_persistence = float(garch_result.params["alpha[1]"] + garch_result.params["beta[1]"])
+        garch_half_life = (
+            float(np.log(0.5) / np.log(garch_persistence)) if 0 < garch_persistence < 1 else None
+        )
+
         garch_vol_series = (
             garch_result.conditional_volatility / 100
         ) * np.sqrt(252)
@@ -725,6 +884,9 @@ def forecasting_comparison(request: Optional[HoldingsRequest] = None):
             .sort_index()
         )
 
+        summary = benchmark_summary(chart_frame, garch_results, lstm_results)
+        regimes = volatility_regimes(returns_series)
+
         result = {
             "series": {
                 "dates": [d.strftime("%Y-%m-%d") for d in chart_frame.index],
@@ -738,6 +900,13 @@ def forecasting_comparison(request: Optional[HoldingsRequest] = None):
             "ewma": baseline_results["EWMA"],
             "garch": garch_results,
             "lstm": lstm_results,
+            "summary": summary,
+            "regimes": regimes,
+            "static_volatility": float(returns_series.std(ddof=1) * np.sqrt(252)),
+            "garch_persistence": {
+                "alpha_plus_beta": garch_persistence,
+                "half_life_sessions": garch_half_life,
+            },
             "latest_forecast": {
                 "garch_annualized": latest_garch_annualized,
                 "lstm_annualized": latest_lstm_forecast,
@@ -747,14 +916,20 @@ def forecasting_comparison(request: Optional[HoldingsRequest] = None):
                 "final_validation_loss": float(history["validation_loss"][-1]),
             },
         }
+        if len(_FORECAST_CACHE) >= MAX_FORECAST_CACHE:
+            _FORECAST_CACHE.pop(next(iter(_FORECAST_CACHE)))  # drop the oldest
         _FORECAST_CACHE[cache_key] = result
         return result
-    except Exception as exc:
+    except USER_ERRORS as exc:
         raise HTTPException(status_code=400, detail=str(exc))
 
 
 @app.post("/api/monte-carlo")
-def monte_carlo(request: Optional[HoldingsRequest] = None, horizon_days: int = 21):
+def monte_carlo(
+    request: Optional[HoldingsRequest] = None,
+    horizon_days: int = 21,
+    _admin: None = Depends(require_admin),
+):
     """
     Monte Carlo portfolio outcome distribution over `horizon_days` trading days:
     expected mean, median, P95, 5% VaR, 95% CVaR, worst simulated path.
@@ -807,12 +982,12 @@ def monte_carlo(request: Optional[HoldingsRequest] = None, horizon_days: int = 2
             "fan": monte_carlo_fan(simulated_returns, pv),
             "histogram": value_histogram(pv * (1 + cumulative)),
         }
-    except Exception as exc:
+    except USER_ERRORS as exc:
         raise HTTPException(status_code=400, detail=str(exc))
 
 
 @app.post("/api/scenarios")
-def scenarios(request: Optional[HoldingsRequest] = None):
+def scenarios(request: Optional[HoldingsRequest] = None, _admin: None = Depends(require_admin)):
     """
     Deterministic stress tests for historical/structural market shocks.
     """
@@ -877,13 +1052,13 @@ def scenarios(request: Optional[HoldingsRequest] = None):
         })
 
         return {"portfolio_value": pv, "scenarios": results}
-    except Exception as exc:
+    except USER_ERRORS as exc:
         raise HTTPException(status_code=400, detail=str(exc))
 
 
 @app.get("/api/overview")
 @app.post("/api/overview")
-def get_overview(request: Optional[HoldingsRequest] = None):
+def get_overview(request: Optional[HoldingsRequest] = None, _admin: None = Depends(require_admin)):
     """
     Combined metrics for the top overview dashboard.
 
@@ -938,12 +1113,12 @@ def get_overview(request: Optional[HoldingsRequest] = None):
             "last_day_return": float(returns_series.iloc[-1]),
             "top_holding": rows[0] if rows else None,
         }
-    except Exception as exc:
+    except USER_ERRORS as exc:
         raise HTTPException(status_code=400, detail=str(exc))
 
 
 @app.post("/api/analyze")
-def analyze_portfolio(request: HoldingsRequest):
+def analyze_portfolio(request: HoldingsRequest, _admin: None = Depends(require_admin)):
     """
     Simplified plain-language summary endpoint (used by static/kinetix.html).
     """
@@ -986,7 +1161,7 @@ def analyze_portfolio(request: HoldingsRequest):
             "historical_bad_day_pct": historical_loss_pct,
             "price_history_through": price_data["DATE"].max().strftime("%d %b %Y"),
         }
-    except Exception as exc:
+    except USER_ERRORS as exc:
         raise HTTPException(status_code=400, detail=str(exc))
 
 
